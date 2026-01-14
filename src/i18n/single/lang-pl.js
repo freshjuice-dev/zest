@@ -1,0 +1,55 @@
+/**
+ * PL only translation - auto-generated
+ * Do not edit manually, run: npm run build
+ */
+export const translations = {
+  pl: {
+      "labels": {
+          "banner": {
+              "title": "Szanujemy Twoją prywatność",
+              "description": "Używamy plików cookie, aby poprawić Twoje wrażenia z przeglądania, dostarczać spersonalizowane treści i analizować nasz ruch. Klikając „Zaakceptuj wszystko\", wyrażasz zgodę na używanie plików cookie.",
+              "acceptAll": "Zaakceptuj wszystko",
+              "rejectAll": "Odrzuć wszystko",
+              "settings": "Ustawienia"
+          },
+          "modal": {
+              "title": "Ustawienia prywatności",
+              "description": "Zarządzaj swoimi preferencjami dotyczącymi plików cookie. Możesz włączyć lub wyłączyć różne typy plików cookie poniżej.",
+              "save": "Zapisz preferencje",
+              "acceptAll": "Zaakceptuj wszystko",
+              "rejectAll": "Odrzuć wszystko"
+          },
+          "widget": {
+              "label": "Ustawienia plików cookie"
+          }
+      },
+      "categories": {
+          "essential": {
+              "label": "Niezbędne",
+              "description": "Wymagane do prawidłowego działania strony. Nie można ich wyłączyć."
+          },
+          "functional": {
+              "label": "Funkcjonalne",
+              "description": "Umożliwiają spersonalizowane funkcje, takie jak preferencje językowe i motywy."
+          },
+          "analytics": {
+              "label": "Analityczne",
+              "description": "Pomagają nam zrozumieć, jak odwiedzający korzystają z naszej strony."
+          },
+          "marketing": {
+              "label": "Marketingowe",
+              "description": "Służą do wyświetlania odpowiednich reklam i mierzenia skuteczności kampanii."
+          }
+      }
+  }
+};
+
+export const supportedLanguages = ['pl'];
+
+export function detectLanguage() {
+  return 'pl';
+}
+
+export function getTranslation() {
+  return translations.pl;
+}

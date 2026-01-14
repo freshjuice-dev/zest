@@ -1,0 +1,55 @@
+/**
+ * FR only translation - auto-generated
+ * Do not edit manually, run: npm run build
+ */
+export const translations = {
+  fr: {
+      "labels": {
+          "banner": {
+              "title": "Nous respectons votre vie privée",
+              "description": "Nous utilisons des cookies pour améliorer votre expérience de navigation, proposer du contenu personnalisé et analyser notre trafic. En cliquant sur « Tout accepter », vous consentez à l'utilisation de cookies.",
+              "acceptAll": "Tout accepter",
+              "rejectAll": "Tout refuser",
+              "settings": "Paramètres"
+          },
+          "modal": {
+              "title": "Paramètres de confidentialité",
+              "description": "Gérez vos préférences en matière de cookies. Vous pouvez activer ou désactiver différents types de cookies ci-dessous.",
+              "save": "Enregistrer les préférences",
+              "acceptAll": "Tout accepter",
+              "rejectAll": "Tout refuser"
+          },
+          "widget": {
+              "label": "Paramètres des cookies"
+          }
+      },
+      "categories": {
+          "essential": {
+              "label": "Essentiels",
+              "description": "Nécessaires au bon fonctionnement du site. Ne peuvent pas être désactivés."
+          },
+          "functional": {
+              "label": "Fonctionnels",
+              "description": "Permettent des fonctionnalités personnalisées comme les préférences de langue et de thème."
+          },
+          "analytics": {
+              "label": "Analytiques",
+              "description": "Nous aident à comprendre comment les visiteurs interagissent avec notre site."
+          },
+          "marketing": {
+              "label": "Marketing",
+              "description": "Utilisés pour afficher des publicités pertinentes et mesurer les performances des campagnes."
+          }
+      }
+  }
+};
+
+export const supportedLanguages = ['fr'];
+
+export function detectLanguage() {
+  return 'fr';
+}
+
+export function getTranslation() {
+  return translations.fr;
+}

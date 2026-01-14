@@ -1,0 +1,40 @@
+{
+  "$schema": "../zest.config.schema.json",
+  "labels": {
+    "banner": {
+      "title": "プライバシーを尊重します",
+      "description": "当サイトでは、ブラウジング体験の向上、パーソナライズされたコンテンツの提供、トラフィックの分析のためにCookieを使用しています。「すべて同意」をクリックすると、Cookieの使用に同意したことになります。",
+      "acceptAll": "すべて同意",
+      "rejectAll": "すべて拒否",
+      "settings": "設定"
+    },
+    "modal": {
+      "title": "プライバシー設定",
+      "description": "Cookieの設定を管理できます。以下で各種Cookieを有効または無効にできます。",
+      "save": "設定を保存",
+      "acceptAll": "すべて同意",
+      "rejectAll": "すべて拒否"
+    },
+    "widget": {
+      "label": "Cookie設定"
+    }
+  },
+  "categories": {
+    "essential": {
+      "label": "必須",
+      "description": "サイトの正常な動作に必要です。無効にすることはできません。"
+    },
+    "functional": {
+      "label": "機能性",
+      "description": "言語設定やテーマなどのパーソナライズ機能を有効にします。"
+    },
+    "analytics": {
+      "label": "分析",
+      "description": "訪問者がサイトをどのように利用しているかを理解するのに役立ちます。"
+    },
+    "marketing": {
+      "label": "マーケティング",
+      "description": "関連性の高い広告を表示し、キャンペーンの効果を測定するために使用されます。"
+    }
+  }
+}

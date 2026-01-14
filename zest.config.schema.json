@@ -1,0 +1,256 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Zest Cookie Consent Configuration",
+  "description": "Configuration schema for @freshjuice/zest cookie consent toolkit",
+  "type": "object",
+  "properties": {
+    "lang": {
+      "type": "string",
+      "enum": ["auto", "en", "de", "es", "fr", "it", "pt", "nl", "pl", "uk", "ru", "ja", "zh"],
+      "default": "auto",
+      "description": "Language for UI labels. 'auto' detects from <html lang> or browser."
+    },
+    "position": {
+      "type": "string",
+      "enum": ["bottom", "bottom-left", "bottom-right", "top"],
+      "default": "bottom",
+      "description": "Position of the consent banner"
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["light", "dark", "auto"],
+      "default": "auto",
+      "description": "Color theme for the UI. 'auto' follows system preference (prefers-color-scheme)"
+    },
+    "accentColor": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "default": "#0071e3",
+      "description": "Accent color for buttons (hex format)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["manual", "safe", "strict", "doomsday"],
+      "default": "safe",
+      "description": "Script blocking mode"
+    },
+    "autoInit": {
+      "type": "boolean",
+      "default": true,
+      "description": "Automatically initialize on page load"
+    },
+    "respectDNT": {
+      "type": "boolean",
+      "default": true,
+      "description": "Respect Do Not Track (DNT) and Global Privacy Control (GPC) browser signals"
+    },
+    "dntBehavior": {
+      "type": "string",
+      "enum": ["reject", "preselect", "ignore"],
+      "default": "reject",
+      "description": "Behavior when DNT/GPC is enabled: 'reject' auto-rejects non-essential without showing banner, 'preselect' shows banner with non-essential unchecked, 'ignore' ignores DNT signal"
+    },
+    "showWidget": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show floating widget after consent is given"
+    },
+    "expiration": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "default": 365,
+      "description": "Consent cookie expiration in days"
+    },
+    "policyUrl": {
+      "type": ["string", "null"],
+      "format": "uri-reference",
+      "default": null,
+      "description": "URL to privacy policy page"
+    },
+    "imprintUrl": {
+      "type": ["string", "null"],
+      "format": "uri-reference",
+      "default": null,
+      "description": "URL to imprint/legal page"
+    },
+    "customStyles": {
+      "type": "string",
+      "default": "",
+      "description": "Custom CSS to inject into Shadow DOM"
+    },
+    "blockedDomains": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "Domain to block (defaults to marketing category)"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "description": "Domain to block"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["functional", "analytics", "marketing"],
+                "description": "Category for the blocked domain"
+              }
+            },
+            "required": ["domain"]
+          }
+        ]
+      },
+      "default": [],
+      "description": "Custom domains to block in addition to mode-based blocking"
+    },
+    "labels": {
+      "type": "object",
+      "description": "UI text labels for localization",
+      "properties": {
+        "banner": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": "We value your privacy"
+            },
+            "description": {
+              "type": "string",
+              "default": "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic."
+            },
+            "acceptAll": {
+              "type": "string",
+              "default": "Accept All"
+            },
+            "rejectAll": {
+              "type": "string",
+              "default": "Reject All"
+            },
+            "settings": {
+              "type": "string",
+              "default": "Settings"
+            }
+          }
+        },
+        "modal": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": "Privacy Settings"
+            },
+            "description": {
+              "type": "string",
+              "default": "Manage your cookie preferences."
+            },
+            "save": {
+              "type": "string",
+              "default": "Save Preferences"
+            },
+            "acceptAll": {
+              "type": "string",
+              "default": "Accept All"
+            },
+            "rejectAll": {
+              "type": "string",
+              "default": "Reject All"
+            }
+          }
+        },
+        "widget": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "default": "Cookie Settings"
+            }
+          }
+        }
+      }
+    },
+    "categories": {
+      "type": "object",
+      "description": "Category definitions and labels",
+      "properties": {
+        "essential": {
+          "$ref": "#/definitions/category"
+        },
+        "functional": {
+          "$ref": "#/definitions/category"
+        },
+        "analytics": {
+          "$ref": "#/definitions/category"
+        },
+        "marketing": {
+          "$ref": "#/definitions/category"
+        }
+      }
+    },
+    "patterns": {
+      "type": "object",
+      "description": "Custom regex patterns for categorizing cookies/storage keys",
+      "properties": {
+        "essential": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "functional": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "analytics": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "marketing": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "callbacks": {
+      "type": "object",
+      "description": "Callback functions for consent events",
+      "properties": {
+        "onAccept": {
+          "description": "Called when user accepts cookies"
+        },
+        "onReject": {
+          "description": "Called when user rejects all non-essential cookies"
+        },
+        "onChange": {
+          "description": "Called when consent state changes"
+        },
+        "onReady": {
+          "description": "Called when Zest is initialized"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "category": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "default": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+/**
+ * ES only translation - auto-generated
+ * Do not edit manually, run: npm run build
+ */
+export const translations = {
+  es: {
+      "labels": {
+          "banner": {
+              "title": "Valoramos tu privacidad",
+              "description": "Utilizamos cookies para mejorar tu experiencia de navegación, ofrecer contenido personalizado y analizar nuestro tráfico. Al hacer clic en \"Aceptar todo\", consientes el uso de cookies.",
+              "acceptAll": "Aceptar todo",
+              "rejectAll": "Rechazar todo",
+              "settings": "Configuración"
+          },
+          "modal": {
+              "title": "Configuración de privacidad",
+              "description": "Gestiona tus preferencias de cookies. Puedes activar o desactivar diferentes tipos de cookies a continuación.",
+              "save": "Guardar preferencias",
+              "acceptAll": "Aceptar todo",
+              "rejectAll": "Rechazar todo"
+          },
+          "widget": {
+              "label": "Configuración de cookies"
+          }
+      },
+      "categories": {
+          "essential": {
+              "label": "Esenciales",
+              "description": "Necesarias para el funcionamiento del sitio web. No se pueden desactivar."
+          },
+          "functional": {
+              "label": "Funcionales",
+              "description": "Permiten funciones personalizadas como preferencias de idioma y temas."
+          },
+          "analytics": {
+              "label": "Analíticas",
+              "description": "Nos ayudan a entender cómo los visitantes interactúan con nuestro sitio web."
+          },
+          "marketing": {
+              "label": "Marketing",
+              "description": "Se utilizan para mostrar anuncios relevantes y medir el rendimiento de las campañas."
+          }
+      }
+  }
+};
+
+export const supportedLanguages = ['es'];
+
+export function detectLanguage() {
+  return 'es';
+}
+
+export function getTranslation() {
+  return translations.es;
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "../zest.config.schema.json",
+  "labels": {
+    "banner": {
+      "title": "Wir respektieren Ihre Privatsphäre",
+      "description": "Wir verwenden Cookies, um Ihr Surferlebnis zu verbessern, personalisierte Inhalte bereitzustellen und unseren Datenverkehr zu analysieren. Mit einem Klick auf „Alle akzeptieren\" stimmen Sie der Verwendung von Cookies zu.",
+      "acceptAll": "Alle akzeptieren",
+      "rejectAll": "Alle ablehnen",
+      "settings": "Einstellungen"
+    },
+    "modal": {
+      "title": "Datenschutzeinstellungen",
+      "description": "Verwalten Sie Ihre Cookie-Einstellungen. Sie können verschiedene Arten von Cookies unten aktivieren oder deaktivieren.",
+      "save": "Einstellungen speichern",
+      "acceptAll": "Alle akzeptieren",
+      "rejectAll": "Alle ablehnen"
+    },
+    "widget": {
+      "label": "Cookie-Einstellungen"
+    }
+  },
+  "categories": {
+    "essential": {
+      "label": "Notwendig",
+      "description": "Erforderlich für die ordnungsgemäße Funktion der Website. Können nicht deaktiviert werden."
+    },
+    "functional": {
+      "label": "Funktional",
+      "description": "Ermöglichen personalisierte Funktionen wie Spracheinstellungen und Designs."
+    },
+    "analytics": {
+      "label": "Analytisch",
+      "description": "Helfen uns zu verstehen, wie Besucher mit unserer Website interagieren."
+    },
+    "marketing": {
+      "label": "Marketing",
+      "description": "Werden verwendet, um relevante Werbung anzuzeigen und die Kampagnenleistung zu messen."
+    }
+  }
+}

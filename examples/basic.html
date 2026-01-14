@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zest Cookie Consent - Basic Example</title>
+
+  <!-- Zest Configuration -->
+  <script>
+    window.ZestConfig = {
+      position: 'bottom-right',
+      theme: 'light',
+      mode: 'safe', // Will auto-block known trackers like GTM
+      accentColor: '#0071e3',
+      policyUrl: '/privacy-policy',
+      callbacks: {
+        onAccept: (consent) => console.log('Accepted:', consent),
+        onReject: () => console.log('Rejected all'),
+        onChange: (consent) => console.log('Consent changed:', consent),
+        onReady: (consent) => console.log('Zest ready:', consent)
+      }
+    };
+  </script>
+
+  <!-- Load Zest BEFORE any tracking scripts -->
+  <script src="../dist/zest.min.js"></script>
+
+  <!-- Google Tag Manager - will be AUTO-BLOCKED by Zest until consent -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XXXXXXX');
+  </script>
+
+  <!-- Google Analytics - will be AUTO-BLOCKED by Zest until consent -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXX');
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    h1 { color: #1f2937; }
+    .section {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 8px;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 4px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary { background: #0071e3; color: white; }
+    .btn-secondary { background: #e5e7eb; color: #374151; }
+    code {
+      background: #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    #consent-status {
+      padding: 10px;
+      background: #ecfdf5;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+    #blocked-scripts {
+      padding: 10px;
+      background: #fef3c7;
+      border-radius: 4px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <h1>Zest Cookie Consent Demo</h1>
+
+  <div class="section">
+    <h2>About This Demo</h2>
+    <p>
+      This page demonstrates Zest's <strong>automatic script blocking</strong>.
+      Google Tag Manager and Google Analytics scripts are in the <code>&lt;head&gt;</code>
+      but Zest blocks them until you give consent.
+    </p>
+    <p>
+      <strong>Mode:</strong> <code>safe</code> - auto-blocks known trackers (GTM, GA, Facebook, etc.)
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>Blocked Scripts</h2>
+    <p>Scripts currently blocked by Zest:</p>
+    <div id="blocked-scripts">Loading...</div>
+    <button class="btn-secondary" onclick="updateBlockedScripts()">Refresh</button>
+  </div>
+
+  <div class="section">
+    <h2>API Controls</h2>
+    <p>Use these buttons to control the consent UI:</p>
+    <button class="btn-primary" onclick="Zest.show()">Show Banner</button>
+    <button class="btn-primary" onclick="Zest.showSettings()">Show Settings</button>
+    <button class="btn-secondary" onclick="Zest.hide()">Hide Banner</button>
+    <button class="btn-secondary" onclick="Zest.reset()">Reset Consent</button>
+  </div>
+
+  <div class="section">
+    <h2>Programmatic Consent</h2>
+    <p>Accept or reject all cookies programmatically:</p>
+    <button class="btn-primary" onclick="Zest.acceptAll()">Accept All</button>
+    <button class="btn-secondary" onclick="Zest.rejectAll()">Reject All</button>
+  </div>
+
+  <div class="section">
+    <h2>Current Consent Status</h2>
+    <p>Click the button to check current consent state:</p>
+    <button class="btn-secondary" onclick="updateStatus()">Check Status</button>
+    <div id="consent-status">Click "Check Status" to see current consent.</div>
+  </div>
+
+  <div class="section">
+    <h2>Test Cookie/Storage Blocking</h2>
+    <p>Try setting cookies and localStorage items. They'll be blocked unless consent is given.</p>
+    <button class="btn-secondary" onclick="testCookie()">Set Analytics Cookie (_ga)</button>
+    <button class="btn-secondary" onclick="testStorage()">Set localStorage (_ga_test)</button>
+    <div id="test-output" style="margin-top: 10px; font-family: monospace; font-size: 13px;"></div>
+  </div>
+
+  <script>
+    function updateBlockedScripts() {
+      const blocked = document.querySelectorAll('script[data-zest-processed="blocked"]');
+      const el = document.getElementById('blocked-scripts');
+
+      if (blocked.length === 0) {
+        el.innerHTML = '<em>No scripts currently blocked (consent may have been given)</em>';
+      } else {
+        el.innerHTML = Array.from(blocked).map(s => {
+          const src = s.getAttribute('data-blocked-src') || '(inline script)';
+          const cat = s.getAttribute('data-consent-category');
+          return `[${cat}] ${src}`;
+        }).join('<br>');
+      }
+    }
+
+    function updateStatus() {
+      const consent = Zest.getConsent();
+      const hasDecision = Zest.hasConsentDecision();
+      document.getElementById('consent-status').innerHTML = `
+        <strong>Has made decision:</strong> ${hasDecision}<br>
+        <strong>Essential:</strong> ${consent.essential}<br>
+        <strong>Functional:</strong> ${consent.functional}<br>
+        <strong>Analytics:</strong> ${consent.analytics}<br>
+        <strong>Marketing:</strong> ${consent.marketing}
+      `;
+    }
+
+    function testCookie() {
+      document.cookie = '_ga=GA1.2.123456789.1234567890';
+      document.getElementById('test-output').textContent =
+        'Attempted to set _ga cookie. Check console for blocked message if analytics not consented.';
+    }
+
+    function testStorage() {
+      localStorage.setItem('_ga_test', 'test-value');
+      document.getElementById('test-output').textContent =
+        'Attempted to set _ga_test in localStorage. Check console for blocked message if analytics not consented.';
+    }
+
+    // Listen for consent events
+    document.addEventListener('zest:consent', (e) => {
+      console.log('zest:consent event:', e.detail);
+      updateBlockedScripts();
+    });
+
+    document.addEventListener('zest:change', (e) => {
+      console.log('zest:change event:', e.detail);
+      updateStatus();
+      updateBlockedScripts();
+    });
+
+    document.addEventListener('zest:ready', () => {
+      updateBlockedScripts();
+    });
+
+    // Initial update
+    setTimeout(updateBlockedScripts, 100);
+  </script>
+</body>
+</html>

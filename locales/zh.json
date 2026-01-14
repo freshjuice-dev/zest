@@ -1,0 +1,40 @@
+{
+  "$schema": "../zest.config.schema.json",
+  "labels": {
+    "banner": {
+      "title": "我们重视您的隐私",
+      "description": "我们使用Cookie来改善您的浏览体验、提供个性化内容并分析我们的流量。点击\"全部接受\"即表示您同意我们使用Cookie。",
+      "acceptAll": "全部接受",
+      "rejectAll": "全部拒绝",
+      "settings": "设置"
+    },
+    "modal": {
+      "title": "隐私设置",
+      "description": "管理您的Cookie偏好设置。您可以在下方启用或禁用不同类型的Cookie。",
+      "save": "保存设置",
+      "acceptAll": "全部接受",
+      "rejectAll": "全部拒绝"
+    },
+    "widget": {
+      "label": "Cookie设置"
+    }
+  },
+  "categories": {
+    "essential": {
+      "label": "必要",
+      "description": "网站正常运行所必需的。无法禁用。"
+    },
+    "functional": {
+      "label": "功能性",
+      "description": "启用个性化功能，如语言偏好和主题设置。"
+    },
+    "analytics": {
+      "label": "分析",
+      "description": "帮助我们了解访问者如何与网站互动。"
+    },
+    "marketing": {
+      "label": "营销",
+      "description": "用于展示相关广告并衡量营销活动效果。"
+    }
+  }
+}
