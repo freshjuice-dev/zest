@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Lightweight cookie consent toolkit for GDPR/CCPA compliance",
   "main": "dist/zest.min.js",
-  "module": "dist/zest.esm.js",
+  "module": "dist/zest.esm.min.js",
   "files": [
     "dist",
     "locales",
@@ -42,6 +42,9 @@
     }
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/freshjuice-dev/zest.git"

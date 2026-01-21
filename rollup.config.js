@@ -16,48 +16,83 @@ const terserOptions = {
 // Languages to build individual bundles for
 const languages = ['en', 'de', 'es', 'fr', 'it', 'pt', 'nl', 'pl', 'uk', 'ru', 'ja', 'zh'];
 
-// Generate config for a single language build
-function langConfig(lang) {
-  return {
-    input: 'src/index.js',
-    output: {
-      file: `dist/zest.${lang}.min.js`,
-      format: 'iife',
-      name: 'Zest',
-      sourcemap: true
-    },
-    plugins: [
-      alias({
-        entries: [
-          {
-            find: './i18n/translations.js',
-            replacement: resolve(__dirname, `src/i18n/single/lang-${lang}.js`)
-          },
-          {
-            find: '../i18n/translations.js',
-            replacement: resolve(__dirname, `src/i18n/single/lang-${lang}.js`)
-          }
-        ]
-      }),
-      terser(terserOptions)
+// Alias entries for a single language
+function langAlias(lang) {
+  return alias({
+    entries: [
+      {
+        find: './i18n/translations.js',
+        replacement: resolve(__dirname, `src/i18n/single/lang-${lang}.js`)
+      },
+      {
+        find: '../i18n/translations.js',
+        replacement: resolve(__dirname, `src/i18n/single/lang-${lang}.js`)
+      }
     ]
-  };
+  });
+}
+
+// Generate configs for a single language build (minified + unminified)
+function langConfigs(lang) {
+  return [
+    // Minified for production (no sourcemap)
+    {
+      input: 'src/index.js',
+      output: {
+        file: `dist/zest.${lang}.min.js`,
+        format: 'iife',
+        name: 'Zest'
+      },
+      plugins: [langAlias(lang), terser(terserOptions)]
+    },
+    // Unminified for development (with sourcemap)
+    {
+      input: 'src/index.js',
+      output: {
+        file: `dist/zest.${lang}.js`,
+        format: 'iife',
+        name: 'Zest',
+        sourcemap: true
+      },
+      plugins: [langAlias(lang)]
+    }
+  ];
 }
 
 export default [
-  // Full multilang bundle (IIFE)
+  // Full multilang bundle (IIFE) - minified for production
   {
     input: 'src/index.js',
     output: {
       file: 'dist/zest.min.js',
       format: 'iife',
-      name: 'Zest',
-      sourcemap: true
+      name: 'Zest'
     },
     plugins: [terser(terserOptions)]
   },
 
-  // Full multilang bundle (ESM)
+  // Full multilang bundle (IIFE) - unminified with sourcemaps for development
+  {
+    input: 'src/index.js',
+    output: {
+      file: 'dist/zest.js',
+      format: 'iife',
+      name: 'Zest',
+      sourcemap: true
+    }
+  },
+
+  // Full multilang bundle (ESM) - minified for production
+  {
+    input: 'src/index.js',
+    output: {
+      file: 'dist/zest.esm.min.js',
+      format: 'es'
+    },
+    plugins: [terser(terserOptions)]
+  },
+
+  // Full multilang bundle (ESM) - unminified with sourcemaps for development
   {
     input: 'src/index.js',
     output: {
@@ -67,6 +102,6 @@ export default [
     }
   },
 
-  // Single language builds
-  ...languages.map(lang => langConfig(lang))
+  // Single language builds (minified + unminified for each)
+  ...languages.flatMap(lang => langConfigs(lang))
 ];
