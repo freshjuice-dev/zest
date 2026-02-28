@@ -11,6 +11,9 @@ import { setPatterns } from './core/pattern-matcher.js';
 import { getCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
 
+// Integrations
+import { applyConsentSignals } from './integrations/consent-signals.js';
+
 // Config
 import { getConfig, setConfig, getCurrentConfig } from './config/parser.js';
 
@@ -60,6 +63,8 @@ function handleAcceptAll() {
   const result = storeAcceptAll(config.expiration);
   const categories = getCategoryIds();
 
+  applyConsentSignals(result.current, config, false);
+
   hideBanner();
   hideModal();
 
@@ -81,6 +86,8 @@ function handleAcceptAll() {
 function handleRejectAll() {
   const result = storeRejectAll(config.expiration);
 
+  applyConsentSignals(result.current, config, false);
+
   hideBanner();
   hideModal();
 
@@ -99,6 +106,8 @@ function handleRejectAll() {
  */
 function handleSavePreferences(selections) {
   const result = updateConsent(selections, config.expiration);
+
+  applyConsentSignals(result.current, config, false);
 
   // Find newly allowed categories
   const newlyAllowed = Object.keys(result.current).filter(
@@ -178,6 +187,13 @@ function init(userConfig = {}) {
   // Merge config
   config = setConfig(userConfig);
 
+  // Push default denied state to vendor consent mode APIs (must happen before scripts load)
+  applyConsentSignals(
+    { essential: true, functional: false, analytics: false, marketing: false },
+    config,
+    true
+  );
+
   // Set patterns if provided
   if (config.patterns) {
     setPatterns(config.patterns);
@@ -198,6 +214,11 @@ function init(userConfig = {}) {
 
   initialized = true;
 
+  // Push update for returning visitors with saved consent
+  if (hasConsentDecision()) {
+    applyConsentSignals(consent, config, false);
+  }
+
   // Check Do Not Track / Global Privacy Control
   const dntEnabled = isDoNotTrackEnabled();
   let dntApplied = false;
@@ -207,6 +228,8 @@ function init(userConfig = {}) {
       // Auto-reject non-essential cookies silently
       const result = storeRejectAll(config.expiration);
       dntApplied = true;
+
+      applyConsentSignals(result.current, config, false);
 
       // Emit events
       emitReject(result.current);

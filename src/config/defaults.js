@@ -57,6 +57,10 @@ export const DEFAULTS = {
   // Custom styles to inject into Shadow DOM
   customStyles: '',
 
+  // Vendor consent mode integrations (optional)
+  consentModeGoogle: false,
+  consentModeMicrosoft: false,
+
   // Blocking mode: 'manual' | 'safe' | 'strict' | 'doomsday'
   mode: 'safe',
 
@@ -87,7 +91,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];

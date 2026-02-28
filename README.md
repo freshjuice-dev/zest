@@ -1,5 +1,10 @@
 # Zest 🍋
 
+[![npm](https://img.shields.io/npm/v/@freshjuice/zest)](https://www.npmjs.com/package/@freshjuice/zest)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/freshjuice-dev/zest)](https://github.com/freshjuice-dev/zest/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/freshjuice-dev/zest)](https://github.com/freshjuice-dev/zest/network/members)
+
 A lightweight cookie consent toolkit for GDPR/CCPA compliance.
 
 - **Lightweight** - ~9KB gzipped (single language) / ~14KB (all 12 languages)
@@ -186,6 +191,47 @@ document.addEventListener('zest:ready', (e) => {
   console.log('Zest initialized:', e.detail.consent);
 });
 ```
+
+## Google Consent Mode v2 / Microsoft UET Consent Mode
+
+Zest can optionally push consent signals to Google and Microsoft advertising APIs. Both are **disabled by default**.
+
+### Enable via JavaScript
+
+```javascript
+window.ZestConfig = {
+  consentModeGoogle: true,    // Google Consent Mode v2
+  consentModeMicrosoft: true  // Microsoft UET Consent Mode
+};
+```
+
+### Enable via data attributes
+
+```html
+<script
+  src="zest.min.js"
+  data-consent-mode-google="true"
+  data-consent-mode-microsoft="true"
+></script>
+```
+
+### How it works
+
+When enabled, Zest automatically:
+
+1. Pushes a `'default'` denied state on page load (before any tracking scripts fire)
+2. Pushes an `'update'` with the correct consent state whenever the user makes a choice
+
+### Category mapping
+
+| Zest Category | Google Consent Mode v2 Signals | Microsoft UET Signal |
+|---|---|---|
+| `essential` | `functionality_storage: 'granted'` (always) | — |
+| `functional` | `personalization_storage` | — |
+| `analytics` | `analytics_storage` | — |
+| `marketing` | `ad_storage`, `ad_user_data`, `ad_personalization` | `ad_storage` |
+
+No additional setup is needed — just include your Google Analytics/GTM or Microsoft UET tags as usual and Zest will handle the consent signaling.
 
 ## Localization
 
