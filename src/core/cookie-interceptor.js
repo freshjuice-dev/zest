@@ -7,6 +7,11 @@ import { getCategoryForName, parseCookieName } from './pattern-matcher.js';
 // Store original descriptor
 let originalCookieDescriptor = null;
 
+// Upper bound on the number of queued cookies awaiting consent replay.
+// An unbounded queue is a memory-exhaustion DoS vector — a hostile
+// script could flood it with document.cookie writes.
+const MAX_QUEUE_SIZE = 100;
+
 // Queue for blocked cookies
 const cookieQueue = [];
 
@@ -90,8 +95,8 @@ export function interceptCookies() {
       if (checkConsent(category)) {
         // Consent given - set cookie
         originalCookieDescriptor.set.call(document, value);
-      } else {
-        // No consent - queue for later
+      } else if (cookieQueue.length < MAX_QUEUE_SIZE) {
+        // No consent - queue for later (capped to prevent DoS)
         cookieQueue.push({
           value,
           name,
@@ -100,17 +105,27 @@ export function interceptCookies() {
         });
       }
     },
-    configurable: true
+    // configurable: false prevents a later-loaded script from
+    // overriding our descriptor and bypassing the interceptor.
+    configurable: false
   });
 
   return true;
 }
 
 /**
- * Restore original cookie behavior
+ * Restore original cookie behavior.
+ *
+ * Note: after interceptCookies() has locked the descriptor with
+ * configurable:false, this call will throw. The lock is intentional —
+ * it stops a later-loaded script from unwinding the interceptor. If you
+ * need a reset, call this before the first interceptCookies() call.
  */
 export function restoreCookies() {
-  if (originalCookieDescriptor) {
+  if (!originalCookieDescriptor) return;
+  try {
     Object.defineProperty(document, 'cookie', originalCookieDescriptor);
+  } catch (_) {
+    // Descriptor is locked; nothing we can do.
   }
 }

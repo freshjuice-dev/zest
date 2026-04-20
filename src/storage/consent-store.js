@@ -2,11 +2,26 @@
  * Consent Store - Manages consent state persistence
  */
 
-import { getDefaultConsent } from '../core/categories.js';
+import { getDefaultConsent, getCategoryIds } from '../core/categories.js';
 import { getOriginalCookieDescriptor } from '../core/cookie-interceptor.js';
+import { sanitizeConsentPayload } from '../core/security.js';
 
 const COOKIE_NAME = 'zest_consent';
 const CONSENT_VERSION = '1.0';
+
+/**
+ * Return the Secure flag fragment when running over HTTPS, empty otherwise.
+ * On HTTPS sites, omitting Secure lets the cookie leak over plain HTTP.
+ */
+function secureAttribute() {
+  try {
+    return typeof location !== 'undefined' && location.protocol === 'https:'
+      ? '; Secure'
+      : '';
+  } catch (_) {
+    return '';
+  }
+}
 
 // Current consent state
 let consent = null;
@@ -36,7 +51,12 @@ function getRawCookie() {
 }
 
 /**
- * Load consent from cookie
+ * Load consent from cookie.
+ *
+ * The parsed cookie is validated against the expected schema via
+ * sanitizeConsentPayload — only known category keys with boolean values
+ * survive, so a tampered cookie can't inject prototype-polluting props
+ * or unexpected category shapes.
  */
 export function loadConsent() {
   try {
@@ -44,9 +64,12 @@ export function loadConsent() {
     const match = cookies.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
 
     if (match) {
-      const data = JSON.parse(decodeURIComponent(match[1]));
-      consent = data.categories || getDefaultConsent();
-      return { ...consent };
+      const raw = JSON.parse(decodeURIComponent(match[1]));
+      const clean = sanitizeConsentPayload(raw, getCategoryIds());
+      if (clean && clean.categories) {
+        consent = { ...getDefaultConsent(), ...clean.categories };
+        return { ...consent };
+      }
     }
   } catch (e) {
     // Invalid or missing cookie
@@ -71,7 +94,7 @@ export function saveConsent(expirationDays = 365) {
   };
 
   const expires = new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toUTCString();
-  const cookieValue = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(data))}; expires=${expires}; path=/; SameSite=Lax`;
+  const cookieValue = `${COOKIE_NAME}=${encodeURIComponent(JSON.stringify(data))}; expires=${expires}; path=/; SameSite=Lax${secureAttribute()}`;
 
   setRawCookie(cookieValue);
 }
@@ -142,7 +165,7 @@ export function rejectAll(expirationDays = 365) {
  * Reset consent (clear cookie)
  */
 export function resetConsent() {
-  setRawCookie(`${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`);
+  setRawCookie(`${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secureAttribute()}`);
   consent = null;
 }
 
@@ -167,7 +190,8 @@ export function getConsentProof() {
     const match = cookies.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
 
     if (match) {
-      return JSON.parse(decodeURIComponent(match[1]));
+      const raw = JSON.parse(decodeURIComponent(match[1]));
+      return sanitizeConsentPayload(raw, getCategoryIds());
     }
   } catch (e) {
     // Invalid cookie

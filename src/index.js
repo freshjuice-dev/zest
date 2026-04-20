@@ -10,6 +10,7 @@ import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScrip
 import { setPatterns } from './core/pattern-matcher.js';
 import { getCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
+import { safeInvoke } from './core/security.js';
 
 // Integrations
 import { applyConsentSignals } from './integrations/consent-signals.js';
@@ -76,8 +77,8 @@ function handleAcceptAll() {
 
   emitConsent(result.current, result.previous);
   emitChange(result.current, result.previous);
-  config.callbacks?.onAccept?.(result.current);
-  config.callbacks?.onChange?.(result.current);
+  safeInvoke(config.callbacks?.onAccept, result.current);
+  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
@@ -97,8 +98,8 @@ function handleRejectAll() {
 
   emitReject(result.current);
   emitChange(result.current, result.previous);
-  config.callbacks?.onReject?.();
-  config.callbacks?.onChange?.(result.current);
+  safeInvoke(config.callbacks?.onReject);
+  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
@@ -135,7 +136,7 @@ function handleSavePreferences(selections) {
   }
 
   emitChange(result.current, result.previous);
-  config.callbacks?.onChange?.(result.current);
+  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
@@ -234,15 +235,15 @@ function init(userConfig = {}) {
       // Emit events
       emitReject(result.current);
       emitChange(result.current, result.previous);
-      config.callbacks?.onReject?.();
-      config.callbacks?.onChange?.(result.current);
+      safeInvoke(config.callbacks?.onReject);
+      safeInvoke(config.callbacks?.onChange, result.current);
     }
     // 'preselect' behavior is handled by default (banner shows with defaults off)
   }
 
   // Emit ready event
   emitReady(consent);
-  config.callbacks?.onReady?.(consent);
+  safeInvoke(config.callbacks?.onReady, consent);
 
   // Show UI based on consent state
   if (!hasConsentDecision() && !dntApplied) {
@@ -357,8 +358,21 @@ const Zest = {
 
 // Auto-init if config present
 if (typeof window !== 'undefined') {
-  // Make Zest available globally
-  window.Zest = Zest;
+  // Make Zest available globally. Use defineProperty with writable:false
+  // so a later-loaded script cannot silently replace window.Zest with a
+  // trojanned stand-in.
+  try {
+    Object.defineProperty(window, 'Zest', {
+      value: Object.freeze(Zest),
+      writable: false,
+      configurable: false,
+      enumerable: true
+    });
+  } catch (e) {
+    // Another script already defined window.Zest — fall back to direct
+    // assignment rather than breaking load order.
+    window.Zest = Zest;
+  }
 
   const autoInit = () => {
     const cfg = getConfig();

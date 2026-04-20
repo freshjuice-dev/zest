@@ -5,6 +5,7 @@
 import { generateStyles } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
 import { DEFAULT_CATEGORIES } from '../core/categories.js';
+import { escapeHTML, safeUrl } from '../core/security.js';
 
 let modalElement = null;
 let shadowRoot = null;
@@ -16,22 +17,24 @@ let currentSelections = {};
 function createCategoryHTML(category, isChecked, isRequired) {
   const disabled = isRequired ? 'disabled' : '';
   const checked = isChecked ? 'checked' : '';
+  const safeId = escapeHTML(category.id);
+  const safeLabel = escapeHTML(category.label);
 
   return `
     <div class="zest-category">
       <div class="zest-category__header">
         <div class="zest-category__info">
-          <span class="zest-category__label">${category.label}</span>
-          <p class="zest-category__description">${category.description}</p>
+          <span class="zest-category__label">${safeLabel}</span>
+          <p class="zest-category__description">${escapeHTML(category.description)}</p>
         </div>
         <label class="zest-toggle">
           <input
             type="checkbox"
             class="zest-toggle__input"
-            data-category="${category.id}"
+            data-category="${safeId}"
             ${checked}
             ${disabled}
-            aria-label="${category.label}"
+            aria-label="${safeLabel}"
           >
           <span class="zest-toggle__slider"></span>
         </label>
@@ -55,29 +58,30 @@ function createModalHTML(config, consent) {
     ))
     .join('');
 
-  const policyLink = config.policyUrl
-    ? `<a href="${config.policyUrl}" class="zest-link" target="_blank" rel="noopener">Privacy Policy</a>`
+  const validatedPolicyUrl = config.policyUrl ? safeUrl(config.policyUrl) : null;
+  const policyLink = validatedPolicyUrl
+    ? `<a href="${escapeHTML(validatedPolicyUrl)}" class="zest-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>`
     : '';
 
   return `
-    <div class="zest-modal-overlay" role="dialog" aria-modal="true" aria-label="${labels.title}">
+    <div class="zest-modal-overlay" role="dialog" aria-modal="true" aria-label="${escapeHTML(labels.title)}">
       <div class="zest-modal">
         <div class="zest-modal__header">
-          <h2 class="zest-modal__title">${labels.title}</h2>
-          <p class="zest-modal__description">${labels.description} ${policyLink}</p>
+          <h2 class="zest-modal__title">${escapeHTML(labels.title)}</h2>
+          <p class="zest-modal__description">${escapeHTML(labels.description)} ${policyLink}</p>
         </div>
         <div class="zest-modal__body">
           ${categoriesHTML}
         </div>
         <div class="zest-modal__footer">
           <button type="button" class="zest-btn zest-btn--primary" data-action="save">
-            ${labels.save}
+            ${escapeHTML(labels.save)}
           </button>
           <button type="button" class="zest-btn zest-btn--secondary" data-action="accept-all">
-            ${labels.acceptAll}
+            ${escapeHTML(labels.acceptAll)}
           </button>
           <button type="button" class="zest-btn zest-btn--ghost" data-action="reject-all">
-            ${labels.rejectAll}
+            ${escapeHTML(labels.rejectAll)}
           </button>
         </div>
       </div>

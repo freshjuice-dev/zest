@@ -109,29 +109,56 @@ export const STRICT_TRACKERS = {
 };
 
 /**
- * Check if a URL matches any tracker in the list
+ * Check if a URL matches any tracker in the list.
+ *
+ * Matching is restricted to hostname (and, when the list entry contains
+ * a path, the URL path prefix). A naive `fullUrl.includes(domain)` was
+ * previously used, which would false-positive on e.g.
+ *   https://mysite.com/page?ref=google-analytics.com
  */
 export function matchesTrackerList(url, trackerList) {
+  let urlObj;
   try {
-    const urlObj = new URL(url);
-    const hostname = urlObj.hostname.toLowerCase();
-    const fullUrl = url.toLowerCase();
+    urlObj = new URL(url);
+  } catch (e) {
+    return false;
+  }
+  const hostname = urlObj.hostname.toLowerCase();
+  const path = urlObj.pathname.toLowerCase();
 
-    for (const domain of trackerList) {
-      // Support partial matches (e.g., "matomo." matches "analytics.matomo.cloud")
-      if (domain.endsWith('.')) {
-        if (hostname.includes(domain.slice(0, -1))) {
-          return true;
-        }
-      } else if (hostname === domain || hostname.endsWith('.' + domain)) {
-        return true;
-      } else if (fullUrl.includes(domain)) {
+  for (const rawEntry of trackerList) {
+    if (typeof rawEntry !== 'string') continue;
+    const entry = rawEntry.toLowerCase();
+
+    // Partial-prefix match on hostname (entry ends with a dot),
+    // e.g. "matomo." matches "analytics.matomo.cloud"
+    if (entry.endsWith('.')) {
+      const needle = entry.slice(0, -1);
+      const segments = hostname.split('.');
+      if (segments.some(seg => seg === needle) || hostname.startsWith(entry)) {
         return true;
       }
+      continue;
     }
-  } catch (e) {
-    // Invalid URL
+
+    // Entries containing a slash specify hostname + path prefix
+    const slashIdx = entry.indexOf('/');
+    if (slashIdx !== -1) {
+      const entryHost = entry.slice(0, slashIdx);
+      const entryPath = entry.slice(slashIdx);
+      if ((hostname === entryHost || hostname.endsWith('.' + entryHost)) &&
+          path.startsWith(entryPath)) {
+        return true;
+      }
+      continue;
+    }
+
+    // Plain hostname: exact or subdomain match only
+    if (hostname === entry || hostname.endsWith('.' + entry)) {
+      return true;
+    }
   }
+
   return false;
 }
 

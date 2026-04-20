@@ -2,6 +2,8 @@
  * Pattern Matcher - Categorizes cookies and storage keys by pattern
  */
 
+import { safeRegExp } from './security.js';
+
 /**
  * Default patterns for each category
  */
@@ -50,16 +52,29 @@ export const DEFAULT_PATTERNS = {
 let patterns = { ...DEFAULT_PATTERNS };
 
 /**
- * Set custom patterns
+ * Set custom patterns. User-supplied strings are validated with safeRegExp,
+ * which rejects catastrophic-backtracking shapes and syntax errors.
+ * Invalid patterns are silently dropped with a console warning.
  */
 export function setPatterns(customPatterns) {
   patterns = { ...DEFAULT_PATTERNS };
+  if (!customPatterns || typeof customPatterns !== 'object') return;
+
   for (const [category, regexList] of Object.entries(customPatterns)) {
-    if (Array.isArray(regexList)) {
-      patterns[category] = regexList.map(p =>
-        p instanceof RegExp ? p : new RegExp(p)
-      );
+    if (!Array.isArray(regexList)) continue;
+
+    const compiled = [];
+    for (const p of regexList) {
+      const re = safeRegExp(p);
+      if (re) {
+        compiled.push(re);
+      } else {
+        try {
+          console.warn('[Zest] Rejected unsafe pattern:', p);
+        } catch (_) { /* no-op */ }
+      }
     }
+    patterns[category] = compiled;
   }
 }
 

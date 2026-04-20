@@ -4,6 +4,10 @@
 
 import { getCategoryForName } from './pattern-matcher.js';
 
+// Upper bound on queued operations awaiting consent replay — unbounded
+// growth would be a memory-exhaustion DoS vector.
+const MAX_QUEUE_SIZE = 200;
+
 // Store originals
 let originalLocalStorage = null;
 let originalSessionStorage = null;
@@ -70,7 +74,7 @@ function createStorageProxy(storage, queue, storageName) {
 
           if (checkConsent(category)) {
             target.setItem(key, value);
-          } else {
+          } else if (queue.length < MAX_QUEUE_SIZE) {
             queue.push({
               key,
               value,

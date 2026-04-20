@@ -2,11 +2,18 @@
  * Styles - Shadow DOM encapsulated CSS with theming
  */
 
+import { safeColor, sanitizeCustomStyles } from '../core/security.js';
+
+const DEFAULT_ACCENT = '#4F46E5';
+
 /**
  * Generate CSS with custom properties
  */
 export function generateStyles(config) {
-  const accentColor = config.accentColor || '#4F46E5';
+  // Only accept colors that pass strict validation — an unvalidated
+  // value is a CSS-injection vector (e.g. `red; } * { display:none; /*`).
+  const accentColor = safeColor(config.accentColor) || DEFAULT_ACCENT;
+  const customCss = sanitizeCustomStyles(config.customStyles);
 
   return `
 :host {
@@ -476,15 +483,29 @@ export function generateStyles(config) {
 .zest-hidden {
   display: none !important;
 }
-${config.customStyles || ''}
+${customCss}
 `;
 }
 
 /**
- * Adjust color brightness
+ * Adjust color brightness. Falls back to the default accent if the input
+ * cannot be parsed as a hex color (non-hex inputs pass safeColor but
+ * can't be brightness-shifted mathematically).
  */
 function adjustColor(hex, percent) {
-  const num = parseInt(hex.replace('#', ''), 16);
+  if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{3,8}$/.test(hex.trim())) {
+    hex = DEFAULT_ACCENT;
+  }
+  let clean = hex.trim().replace('#', '');
+  // Expand 3-digit form to 6
+  if (clean.length === 3) {
+    clean = clean.split('').map(c => c + c).join('');
+  }
+  // Strip alpha if present
+  if (clean.length === 8) clean = clean.slice(0, 6);
+  if (clean.length !== 6) clean = DEFAULT_ACCENT.slice(1);
+
+  const num = parseInt(clean, 16);
   const amt = Math.round(2.55 * percent);
   const R = Math.min(255, Math.max(0, (num >> 16) + amt));
   const G = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amt));

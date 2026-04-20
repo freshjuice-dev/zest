@@ -4,6 +4,7 @@
 
 import { generateStyles, COOKIE_ICON } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
+import { escapeHTML } from '../core/security.js';
 
 let widgetElement = null;
 let shadowRoot = null;
@@ -13,10 +14,11 @@ let shadowRoot = null;
  */
 function createWidgetHTML(config) {
   const labels = config.labels.widget;
+  const safeLabel = escapeHTML(labels.label);
 
   return `
     <div class="zest-widget">
-      <button type="button" class="zest-widget__btn" aria-label="${labels.label}" title="${labels.label}">
+      <button type="button" class="zest-widget__btn" aria-label="${safeLabel}" title="${safeLabel}">
         <span class="zest-widget__icon">${COOKIE_ICON}</span>
       </button>
     </div>

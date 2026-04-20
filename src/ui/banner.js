@@ -4,30 +4,34 @@
 
 import { generateStyles } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
+import { escapeHTML } from '../core/security.js';
 
 let bannerElement = null;
 let shadowRoot = null;
+
+const SAFE_POSITIONS = new Set(['bottom', 'bottom-left', 'bottom-right', 'top']);
 
 /**
  * Create the banner HTML
  */
 function createBannerHTML(config) {
   const labels = config.labels.banner;
-  const position = config.position || 'bottom';
+  const rawPosition = config.position || 'bottom';
+  const position = SAFE_POSITIONS.has(rawPosition) ? rawPosition : 'bottom';
 
   return `
-    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="false" aria-label="${labels.title}">
-      <h2 class="zest-banner__title">${labels.title}</h2>
-      <p class="zest-banner__description">${labels.description}</p>
+    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="false" aria-label="${escapeHTML(labels.title)}">
+      <h2 class="zest-banner__title">${escapeHTML(labels.title)}</h2>
+      <p class="zest-banner__description">${escapeHTML(labels.description)}</p>
       <div class="zest-banner__buttons">
         <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
-          ${labels.acceptAll}
+          ${escapeHTML(labels.acceptAll)}
         </button>
         <button type="button" class="zest-btn zest-btn--secondary" data-action="reject-all">
-          ${labels.rejectAll}
+          ${escapeHTML(labels.rejectAll)}
         </button>
         <button type="button" class="zest-btn zest-btn--ghost" data-action="settings">
-          ${labels.settings}
+          ${escapeHTML(labels.settings)}
         </button>
       </div>
     </div>
