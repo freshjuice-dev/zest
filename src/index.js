@@ -1,146 +1,88 @@
 /**
  * Zest - Lightweight Cookie Consent Toolkit
- * Main entry point
+ * Main entry (full build: logic + UI).
+ *
+ * For a logic-only build without any CSS / Shadow DOM mounting, import
+ * from `@freshjuice/zest/headless` instead.
  */
 
-// Core
-import { interceptCookies, setConsentChecker as setCookieChecker, replayCookies, getOriginalCookieDescriptor } from './core/cookie-interceptor.js';
-import { interceptStorage, setConsentChecker as setStorageChecker, replayStorage } from './core/storage-interceptor.js';
-import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScripts } from './core/script-blocker.js';
-import { setPatterns } from './core/pattern-matcher.js';
-import { getCategoryIds } from './core/categories.js';
-import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
-import { safeInvoke } from './core/security.js';
-
-// Integrations
-import { applyConsentSignals } from './integrations/consent-signals.js';
-
-// Config
-import { getConfig, setConfig, getCurrentConfig } from './config/parser.js';
-
-// Storage
+// Core lifecycle (UI-agnostic)
 import {
-  loadConsent,
+  coreInit,
+  coreAcceptAll,
+  coreRejectAll,
+  coreUpdateConsent,
+  coreReset,
+  isInitialized,
+  getActiveConfig
+} from './core-lifecycle.js';
+
+// Consent store + events
+import {
   getConsent,
   hasConsent,
-  updateConsent,
-  acceptAll as storeAcceptAll,
-  rejectAll as storeRejectAll,
-  resetConsent,
   hasConsentDecision,
   getConsentProof
 } from './storage/consent-store.js';
-import { emitReady, emitConsent, emitReject, emitChange, emitShow, emitHide, EVENTS } from './storage/events.js';
+import { emitShow, emitHide, EVENTS, on, once } from './storage/events.js';
+
+// DNT introspection
+import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
+
+// Config getters
+import { getConfig, getCurrentConfig } from './config/parser.js';
 
 // UI
 import { showBanner, hideBanner, isBannerVisible } from './ui/banner.js';
 import { showModal, hideModal, isModalVisible } from './ui/modal.js';
 import { showWidget, hideWidget, removeWidget, isWidgetVisible } from './ui/widget.js';
 
-// State
-let initialized = false;
-let config = null;
-
 /**
- * Consent checker function shared across interceptors
- */
-function checkConsent(category) {
-  return hasConsent(category);
-}
-
-/**
- * Replay all queued items for newly allowed categories
- */
-function replayAll(allowedCategories) {
-  replayCookies(allowedCategories);
-  replayStorage(allowedCategories);
-  replayScripts(allowedCategories);
-}
-
-/**
- * Handle accept all
+ * Handle accept all — delegates consent logic to core, handles UI swap.
  */
 function handleAcceptAll() {
-  const result = storeAcceptAll(config.expiration);
-  const categories = getCategoryIds();
-
-  applyConsentSignals(result.current, config, false);
+  coreAcceptAll();
+  const config = getActiveConfig();
 
   hideBanner();
   hideModal();
 
-  replayAll(categories);
-
-  if (config.showWidget) {
+  if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
-
-  emitConsent(result.current, result.previous);
-  emitChange(result.current, result.previous);
-  safeInvoke(config.callbacks?.onAccept, result.current);
-  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
- * Handle reject all
+ * Handle reject all.
  */
 function handleRejectAll() {
-  const result = storeRejectAll(config.expiration);
-
-  applyConsentSignals(result.current, config, false);
+  coreRejectAll();
+  const config = getActiveConfig();
 
   hideBanner();
   hideModal();
 
-  if (config.showWidget) {
+  if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
-
-  emitReject(result.current);
-  emitChange(result.current, result.previous);
-  safeInvoke(config.callbacks?.onReject);
-  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
- * Handle save preferences from modal
+ * Handle save preferences from modal.
  */
 function handleSavePreferences(selections) {
-  const result = updateConsent(selections, config.expiration);
-
-  applyConsentSignals(result.current, config, false);
-
-  // Find newly allowed categories
-  const newlyAllowed = Object.keys(result.current).filter(
-    cat => result.current[cat] && !result.previous[cat]
-  );
-
-  if (newlyAllowed.length > 0) {
-    replayAll(newlyAllowed);
-  }
+  coreUpdateConsent(selections);
+  const config = getActiveConfig();
 
   hideModal();
 
-  if (config.showWidget) {
+  if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
-
-  // Determine if this was acceptance or rejection based on selections
-  const hasNonEssential = Object.entries(selections)
-    .some(([cat, val]) => cat !== 'essential' && val);
-
-  if (hasNonEssential) {
-    emitConsent(result.current, result.previous);
-  } else {
-    emitReject(result.current);
-  }
-
-  emitChange(result.current, result.previous);
-  safeInvoke(config.callbacks?.onChange, result.current);
 }
 
 /**
- * Handle show settings
+ * Open the settings modal.
  */
 function handleShowSettings() {
   hideBanner();
@@ -157,17 +99,17 @@ function handleShowSettings() {
 }
 
 /**
- * Handle close modal
+ * Close the modal — either bring the widget back (decision made) or
+ * fall back to the banner (no decision yet).
  */
 function handleCloseModal() {
   hideModal();
   emitHide('modal');
 
-  // Show widget if consent was already given
-  if (hasConsentDecision() && config.showWidget) {
+  const config = getActiveConfig();
+  if (hasConsentDecision() && config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   } else {
-    // Show banner again if no decision made
     showBanner({
       onAcceptAll: handleAcceptAll,
       onRejectAll: handleRejectAll,
@@ -177,103 +119,37 @@ function handleCloseModal() {
 }
 
 /**
- * Initialize Zest
+ * Initialize Zest with UI.
  */
 function init(userConfig = {}) {
-  if (initialized) {
+  const { alreadyInitialized, consent, hasDecision, dntApplied } = coreInit(userConfig);
+  if (alreadyInitialized) {
     console.warn('[Zest] Already initialized');
     return Zest;
   }
 
-  // Merge config
-  config = setConfig(userConfig);
+  const config = getActiveConfig();
 
-  // Push default denied state to vendor consent mode APIs (must happen before scripts load)
-  applyConsentSignals(
-    { essential: true, functional: false, analytics: false, marketing: false },
-    config,
-    true
-  );
-
-  // Set patterns if provided
-  if (config.patterns) {
-    setPatterns(config.patterns);
-  }
-
-  // Set up consent checkers
-  setCookieChecker(checkConsent);
-  setStorageChecker(checkConsent);
-  setScriptChecker(checkConsent);
-
-  // Start interception
-  interceptCookies();
-  interceptStorage();
-  startScriptBlocking(config.mode, config.blockedDomains);
-
-  // Load saved consent
-  const consent = loadConsent();
-
-  initialized = true;
-
-  // Push update for returning visitors with saved consent
-  if (hasConsentDecision()) {
-    applyConsentSignals(consent, config, false);
-  }
-
-  // Check Do Not Track / Global Privacy Control
-  const dntEnabled = isDoNotTrackEnabled();
-  let dntApplied = false;
-
-  if (dntEnabled && config.respectDNT && config.dntBehavior !== 'ignore') {
-    if (config.dntBehavior === 'reject' && !hasConsentDecision()) {
-      // Auto-reject non-essential cookies silently
-      const result = storeRejectAll(config.expiration);
-      dntApplied = true;
-
-      applyConsentSignals(result.current, config, false);
-
-      // Emit events
-      emitReject(result.current);
-      emitChange(result.current, result.previous);
-      safeInvoke(config.callbacks?.onReject);
-      safeInvoke(config.callbacks?.onChange, result.current);
-    }
-    // 'preselect' behavior is handled by default (banner shows with defaults off)
-  }
-
-  // Emit ready event
-  emitReady(consent);
-  safeInvoke(config.callbacks?.onReady, consent);
-
-  // Show UI based on consent state
-  if (!hasConsentDecision() && !dntApplied) {
-    // No consent decision yet - show banner
+  if (!hasDecision && !dntApplied) {
     showBanner({
       onAcceptAll: handleAcceptAll,
       onRejectAll: handleRejectAll,
       onSettings: handleShowSettings
     });
     emitShow('banner');
-  } else {
-    // Consent already given (or DNT auto-rejected) - show widget for reopening settings
-    if (config.showWidget) {
-      showWidget({ onClick: handleShowSettings });
-    }
+  } else if (config?.showWidget) {
+    showWidget({ onClick: handleShowSettings });
   }
 
   return Zest;
 }
 
-/**
- * Public API
- */
 const Zest = {
-  // Initialization
   init,
 
   // Banner control
   show() {
-    if (!initialized) {
+    if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
       return;
     }
@@ -294,7 +170,7 @@ const Zest = {
 
   // Settings modal
   showSettings() {
-    if (!initialized) {
+    if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
       return;
     }
@@ -306,19 +182,19 @@ const Zest = {
     emitHide('modal');
   },
 
-  // Consent management
+  // Consent state
   getConsent,
   hasConsent,
   hasConsentDecision,
   getConsentProof,
 
-  // DNT detection
+  // DNT
   isDoNotTrackEnabled,
   getDNTDetails,
 
-  // Accept/Reject programmatically
+  // Programmatic accept / reject
   acceptAll() {
-    if (!initialized) {
+    if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
       return;
     }
@@ -326,20 +202,19 @@ const Zest = {
   },
 
   rejectAll() {
-    if (!initialized) {
+    if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
       return;
     }
     handleRejectAll();
   },
 
-  // Reset and show banner again
+  // Reset everything and reshow the banner
   reset() {
-    resetConsent();
+    coreReset();
     hideModal();
     removeWidget();
-
-    if (initialized) {
+    if (isInitialized()) {
       showBanner({
         onAcceptAll: handleAcceptAll,
         onRejectAll: handleRejectAll,
@@ -349,18 +224,20 @@ const Zest = {
     }
   },
 
-  // Config
+  // Config introspection
   getConfig: getCurrentConfig,
 
   // Events
+  on,
+  once,
   EVENTS
 };
 
 // Auto-init if config present
 if (typeof window !== 'undefined') {
-  // Make Zest available globally. Use defineProperty with writable:false
-  // so a later-loaded script cannot silently replace window.Zest with a
-  // trojanned stand-in.
+  // Make Zest available globally. defineProperty with writable:false +
+  // configurable:false stops a later-loaded script from replacing the
+  // global with a trojanned stand-in.
   try {
     Object.defineProperty(window, 'Zest', {
       value: Object.freeze(Zest),
@@ -369,8 +246,6 @@ if (typeof window !== 'undefined') {
       enumerable: true
     });
   } catch (e) {
-    // Another script already defined window.Zest — fall back to direct
-    // assignment rather than breaking load order.
     window.Zest = Zest;
   }
 

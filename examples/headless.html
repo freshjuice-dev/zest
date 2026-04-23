@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zest Headless — Bring Your Own UI</title>
+
+  <style>
+    /* This is 100% YOUR CSS. No Shadow DOM. No inline stylesheet from Zest. */
+    :root {
+      --accent: #6d28d9;
+      --bg: #ffffff;
+      --bg-soft: #f5f3ff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    h1 { margin-top: 0; }
+
+    .demo-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 6px;
+    }
+
+    .demo-btn--primary { background: var(--accent); color: white; }
+    .demo-btn--ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+    /* Your own banner */
+    .my-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 1000;
+    }
+    .my-banner.open { display: block; }
+    .my-banner h3 { margin: 0 0 8px 0; font-size: 16px; }
+    .my-banner p { margin: 0 0 16px 0; font-size: 14px; color: var(--muted); }
+
+    /* Your own modal */
+    .my-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+    }
+    .my-modal-overlay.open { display: flex; }
+    .my-modal {
+      background: var(--bg);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 480px;
+      width: 90%;
+    }
+    .my-modal h3 { margin-top: 0; }
+    .category-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .category-row:last-child { border-bottom: none; }
+    .category-row strong { display: block; }
+    .category-row small { color: var(--muted); }
+
+    /* Your own floating trigger */
+    .my-trigger {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.2);
+      font-size: 20px;
+      display: none;
+    }
+    .my-trigger.visible { display: block; }
+
+    .state {
+      padding: 12px;
+      background: var(--bg-soft);
+      border-radius: 8px;
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+  <h1>Zest Headless</h1>
+  <p>
+    No Shadow DOM. No inline styles. All the consent logic, none of the UI —
+    you build the banner, modal, and trigger yourself.
+  </p>
+
+  <h2>Current state</h2>
+  <div id="state" class="state">(loading...)</div>
+
+  <h2>Manual controls</h2>
+  <button class="demo-btn demo-btn--primary" id="open-modal-btn">Open preferences</button>
+  <button class="demo-btn demo-btn--ghost" id="reset-btn">Reset consent</button>
+
+  <!-- Your own banner markup -->
+  <div class="my-banner" id="my-banner">
+    <h3>Cookies, please?</h3>
+    <p>We use cookies for analytics and marketing. You choose.</p>
+    <button class="demo-btn demo-btn--primary" data-action="accept-all">Accept all</button>
+    <button class="demo-btn demo-btn--ghost" data-action="reject-all">Reject all</button>
+    <button class="demo-btn demo-btn--ghost" data-action="settings">Settings</button>
+  </div>
+
+  <!-- Your own modal markup -->
+  <div class="my-modal-overlay" id="my-modal">
+    <div class="my-modal">
+      <h3>Your preferences</h3>
+      <div class="category-row">
+        <div>
+          <strong>Essential</strong>
+          <small>Required for the site to work</small>
+        </div>
+        <input type="checkbox" checked disabled>
+      </div>
+      <div class="category-row">
+        <div>
+          <strong>Functional</strong>
+          <small>Language, theme preferences</small>
+        </div>
+        <input type="checkbox" data-cat="functional">
+      </div>
+      <div class="category-row">
+        <div>
+          <strong>Analytics</strong>
+          <small>Usage stats</small>
+        </div>
+        <input type="checkbox" data-cat="analytics">
+      </div>
+      <div class="category-row">
+        <div>
+          <strong>Marketing</strong>
+          <small>Ad personalization</small>
+        </div>
+        <input type="checkbox" data-cat="marketing">
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button class="demo-btn demo-btn--primary" data-action="save">Save</button>
+        <button class="demo-btn demo-btn--ghost" data-action="close">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Your own trigger to reopen preferences -->
+  <button class="my-trigger" id="my-trigger" title="Cookie settings">🍪</button>
+
+  <!--
+    In a bundled app this would be:
+      import Zest from '@freshjuice/zest/headless';
+
+    For this raw-HTML demo we import the built ESM file directly.
+  -->
+  <script type="module">
+    import Zest from '../dist/zest.headless.esm.js';
+
+    const banner  = document.getElementById('my-banner');
+    const modal   = document.getElementById('my-modal');
+    const trigger = document.getElementById('my-trigger');
+    const stateEl = document.getElementById('state');
+
+    function renderState() {
+      stateEl.textContent = JSON.stringify(Zest.getConsent(), null, 2);
+    }
+
+    function showBanner() { banner.classList.add('open'); }
+    function hideBanner() { banner.classList.remove('open'); }
+    function showModal() {
+      // Hydrate checkboxes from current consent
+      const c = Zest.getConsent();
+      modal.querySelectorAll('[data-cat]').forEach(cb => {
+        cb.checked = !!c[cb.dataset.cat];
+      });
+      modal.classList.add('open');
+    }
+    function hideModal() { modal.classList.remove('open'); }
+    function showTrigger() { trigger.classList.add('visible'); }
+    function hideTrigger() { trigger.classList.remove('visible'); }
+
+    // Init the consent engine
+    Zest.init({
+      mode: 'safe',
+      respectDNT: true,
+      consentModeGoogle: false
+    });
+
+    renderState();
+
+    // Initial UI decision
+    if (!Zest.hasConsentDecision()) {
+      showBanner();
+    } else {
+      showTrigger();
+    }
+
+    // Banner button wiring
+    banner.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (!action) return;
+      if (action === 'accept-all') {
+        Zest.acceptAll();
+        hideBanner();
+        showTrigger();
+      } else if (action === 'reject-all') {
+        Zest.rejectAll();
+        hideBanner();
+        showTrigger();
+      } else if (action === 'settings') {
+        hideBanner();
+        showModal();
+      }
+    });
+
+    // Modal button wiring
+    modal.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (action === 'save') {
+        const selections = { essential: true };
+        modal.querySelectorAll('[data-cat]').forEach(cb => {
+          selections[cb.dataset.cat] = cb.checked;
+        });
+        Zest.updateConsent(selections);
+        hideModal();
+        showTrigger();
+      } else if (action === 'close') {
+        hideModal();
+        if (!Zest.hasConsentDecision()) showBanner();
+        else showTrigger();
+      } else if (e.target === modal) {
+        // click on overlay
+        hideModal();
+        if (!Zest.hasConsentDecision()) showBanner();
+        else showTrigger();
+      }
+    });
+
+    // Custom trigger to reopen preferences
+    trigger.addEventListener('click', () => {
+      hideTrigger();
+      showModal();
+    });
+
+    // Header buttons
+    document.getElementById('open-modal-btn').onclick = () => {
+      hideBanner();
+      hideTrigger();
+      showModal();
+    };
+    document.getElementById('reset-btn').onclick = () => {
+      Zest.reset();
+      hideModal();
+      hideTrigger();
+      showBanner();
+      renderState();
+    };
+
+    // React to changes (from any source)
+    Zest.on(Zest.EVENTS.CHANGE, () => renderState());
+  </script>
+</body>
+</html>

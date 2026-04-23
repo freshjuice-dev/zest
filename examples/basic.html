@@ -153,14 +153,20 @@
       const el = document.getElementById('blocked-scripts');
 
       if (blocked.length === 0) {
-        el.innerHTML = '<em>No scripts currently blocked (consent may have been given)</em>';
-      } else {
-        el.innerHTML = Array.from(blocked).map(s => {
-          const src = s.getAttribute('data-blocked-src') || '(inline script)';
-          const cat = s.getAttribute('data-consent-category');
-          return `[${cat}] ${src}`;
-        }).join('<br>');
+        el.textContent = 'No scripts currently blocked (consent may have been given)';
+        return;
       }
+
+      // Note: the src is intentionally stripped from blocked <script> nodes.
+      // We report what's observable in the DOM (category + inline body hint).
+      el.textContent = '';
+      Array.from(blocked).forEach(s => {
+        const cat = s.getAttribute('data-consent-category') || 'unknown';
+        const hint = s.textContent ? '(inline)' : '(external src blocked)';
+        const row = document.createElement('div');
+        row.textContent = `[${cat}] ${hint}`;
+        el.appendChild(row);
+      });
     }
 
     function updateStatus() {

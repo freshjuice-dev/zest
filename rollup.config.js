@@ -102,6 +102,30 @@ export default [
     }
   },
 
+  // Headless (ESM) - logic only, no UI, no styles. Use when the consumer
+  // is bringing their own banner/modal UI and CSS.
+  {
+    input: 'src/headless.js',
+    output: {
+      file: 'dist/zest.headless.esm.min.js',
+      format: 'es'
+    },
+    plugins: [terser(terserOptions)]
+  },
+  {
+    input: 'src/headless.js',
+    output: {
+      file: 'dist/zest.headless.esm.js',
+      format: 'es',
+      sourcemap: true
+    }
+  },
+
+  // Note: no IIFE headless bundle. Headless is intended for ESM/bundler
+  // consumers (`import Zest from '@freshjuice/zest/headless'`) where
+  // tree-shaking drops the UI. Script-tag users should use the full
+  // `dist/zest.min.js` (which auto-mounts UI) — the two styles don't mix.
+
   // Single language builds (minified + unminified for each)
   ...languages.flatMap(lang => langConfigs(lang))
 ];
