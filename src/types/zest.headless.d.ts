@@ -70,6 +70,20 @@ export interface ZestCallbacks {
   onReady?: (consent: ConsentState) => void;
 }
 
+/**
+ * Granular toggles for Zest's interceptor layer. Default is `true` on
+ * every channel — back-compat with previous versions.
+ *
+ * Consumers that gate optional scripts and storage themselves (typical
+ * for headless integrations) can disable interception per channel and
+ * use Zest as a pure consent-state engine.
+ */
+export interface InterceptToggles {
+  cookies?: boolean;
+  storage?: boolean;
+  scripts?: boolean;
+}
+
 /** Configuration accepted by `init()`. */
 export interface InitOptions {
   /** Respect Do Not Track / Global Privacy Control. Default `true`. */
@@ -78,6 +92,25 @@ export interface InitOptions {
   dntBehavior?: DNTBehavior;
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
+  /** Disable individual interceptors. Default: all on. */
+  intercept?: InterceptToggles;
+  /**
+   * Exact storage / cookie names to treat as strictly-necessary. Each
+   * is appended to the essential category as a fully-anchored regex,
+   * so the built-in essential patterns (zest_*, csrf*, …) stay intact.
+   */
+  essentialKeys?: string[];
+  /**
+   * Regex source strings to treat as strictly-necessary. Validated via
+   * safeRegExp, appended (not replaced) to the essential category.
+   */
+  essentialPatterns?: string[];
+  /**
+   * Override patterns per category. Note: this REPLACES the category's
+   * built-in patterns. Prefer `essentialKeys` / `essentialPatterns` if
+   * you only want to add to the essential category.
+   */
+  patterns?: Partial<Record<ConsentCategory, string[]>>;
   /** Consumer callbacks. */
   callbacks?: ZestCallbacks;
   /** Anything else — Zest tolerates unknown keys at runtime. */

@@ -5,6 +5,61 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-04-26
+
+### Added
+
+- **`intercept` config** — granular toggles to disable Zest's cookie /
+  storage / script interceptors per channel. Default behaviour is
+  unchanged (all on). Headless integrations that gate optional scripts
+  and storage themselves can now opt out cleanly:
+
+  ```js
+  Zest.init({
+    intercept: { storage: false, scripts: false }
+  });
+  ```
+
+- **`essentialKeys` config** — array of exact storage / cookie names to
+  treat as strictly-necessary. Each is appended to the essential
+  category as an anchored regex. Built-in essential patterns
+  (`zest_*`, `csrf*`, `xsrf*`, `session*`, `__host-*`, `__secure-*`)
+  stay intact:
+
+  ```js
+  Zest.init({
+    essentialKeys: ['ct_settings', 'app_theme']
+  });
+  ```
+
+- **`essentialPatterns` config** — regex source strings appended to the
+  essential category, validated via `safeRegExp`. For prefix or family
+  matches.
+
+- **`appendPatternsToCategory()`** exported from
+  `core/pattern-matcher.js`. Lower-level primitive used by the new
+  config fields above.
+
+### Why
+
+Previously the only way to declare a custom strictly-necessary key was
+to override the entire essential category via `patterns.essential`,
+which silently lost the built-in patterns. Headless consumers also had
+no way to disable Zest's cookie / storage interceptor short of
+unloading the proxy themselves. Both gaps are addressed here without
+breaking any v2.1 consumer.
+
+### Internal
+
+- `setPatterns()` continues to fully replace any category passed in —
+  this preserves the v2.1 contract. The new `appendPatternsToCategory()`
+  is the additive primitive consumed by `essentialKeys` /
+  `essentialPatterns`.
+- TypeScript declarations updated for both entries (`zest.d.ts`,
+  `zest.headless.d.ts`) — `InitOptions` now exposes `intercept`,
+  `essentialKeys`, `essentialPatterns`, and `patterns` as first-class
+  fields.
+
 ## [2.1.0] - 2026-04-26
 
 ### Added

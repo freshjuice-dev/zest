@@ -64,6 +64,32 @@ export const DEFAULTS = {
   // Blocking mode: 'manual' | 'safe' | 'strict' | 'doomsday'
   mode: 'safe',
 
+  // Interceptor toggles. By default Zest installs cookie + storage
+  // interceptors that route writes through the consent layer. Consumers
+  // who manage gating themselves (typically headless mode with custom
+  // analytics integrations) can opt out per channel.
+  intercept: {
+    cookies: true,
+    storage: true,
+    scripts: true
+  },
+
+  // Strictly-necessary declarations. Both fields *append* to whatever
+  // the essential category already matches via the pattern matcher
+  // defaults — they do not replace.
+  //
+  // - essentialKeys:    array of exact storage / cookie names to treat
+  //                     as strictly-necessary. Easiest case.
+  // - essentialPatterns: array of regex source strings, validated via
+  //                      safeRegExp. For prefix or family matches.
+  //
+  // Use these instead of `patterns.essential` when you only want to
+  // ADD entries to the essential category without replacing the
+  // built-in patterns (zest_*, csrf*, xsrf*, session*, __host-*,
+  // __secure-*).
+  essentialKeys: [],
+  essentialPatterns: [],
+
   // Custom domains to block (in addition to mode-based blocking)
   blockedDomains: [], // days
 
@@ -144,6 +170,28 @@ export function mergeConfig(userConfig) {
   // Patterns (for pattern matcher)
   if (userConfig.patterns) {
     config.patterns = userConfig.patterns;
+  }
+
+  // Interceptor toggles — shallow-merge so consumers can pass partial
+  // overrides like `intercept: { storage: false }` without losing the
+  // other defaults.
+  if (userConfig.intercept && typeof userConfig.intercept === 'object') {
+    config.intercept = {
+      ...DEFAULTS.intercept,
+      ...userConfig.intercept
+    };
+  }
+
+  // Strictly-necessary declarations
+  if (Array.isArray(userConfig.essentialKeys)) {
+    config.essentialKeys = userConfig.essentialKeys.filter(
+      (k) => typeof k === 'string' && k.length > 0 && k.length <= 200
+    );
+  }
+  if (Array.isArray(userConfig.essentialPatterns)) {
+    config.essentialPatterns = userConfig.essentialPatterns.filter(
+      (p) => typeof p === 'string' && p.length > 0 && p.length <= 500
+    );
   }
 
   return config;

@@ -51,10 +51,47 @@ export const DEFAULT_PATTERNS = {
 
 let patterns = { ...DEFAULT_PATTERNS };
 
+/** Escape a string so it can be embedded in a regex literal verbatim. */
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Append patterns to a single category without replacing what's already
+ * there. Used by `essentialKeys` and `essentialPatterns` config to extend
+ * the strictly-necessary category with consumer-specific entries while
+ * keeping the built-in defaults (zest_*, csrf*, xsrf*, etc.).
+ *
+ * `keys` is an array of exact storage/cookie names; each one is
+ * compiled as a fully-anchored regex via `escapeRegex`.
+ * `patternStrings` is an array of regex source strings, each validated
+ * via `safeRegExp`. Invalid entries are dropped silently.
+ */
+export function appendPatternsToCategory(category, { keys = [], patternStrings = [] } = {}) {
+  if (!patterns[category]) patterns[category] = [];
+
+  for (const key of keys) {
+    if (typeof key !== 'string' || !key) continue;
+    const re = safeRegExp(`^${escapeRegex(key)}$`);
+    if (re) patterns[category].push(re);
+  }
+
+  for (const p of patternStrings) {
+    if (typeof p !== 'string' || !p) continue;
+    const re = safeRegExp(p);
+    if (re) patterns[category].push(re);
+  }
+}
+
 /**
  * Set custom patterns. User-supplied strings are validated with safeRegExp,
  * which rejects catastrophic-backtracking shapes and syntax errors.
  * Invalid patterns are silently dropped with a console warning.
+ *
+ * Note: this REPLACES the patterns for any category present in
+ * `customPatterns`. To extend the essential category without losing the
+ * built-in defaults, use `appendPatternsToCategory()` (or pass
+ * `essentialKeys` / `essentialPatterns` to `Zest.init()`).
  */
 export function setPatterns(customPatterns) {
   patterns = { ...DEFAULT_PATTERNS };

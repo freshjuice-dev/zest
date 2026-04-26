@@ -11,7 +11,7 @@
 import { interceptCookies, setConsentChecker as setCookieChecker, replayCookies } from './core/cookie-interceptor.js';
 import { interceptStorage, setConsentChecker as setStorageChecker, replayStorage } from './core/storage-interceptor.js';
 import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScripts } from './core/script-blocker.js';
-import { setPatterns } from './core/pattern-matcher.js';
+import { setPatterns, appendPatternsToCategory } from './core/pattern-matcher.js';
 import { getCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled } from './core/dnt.js';
 import { safeInvoke } from './core/security.js';
@@ -73,13 +73,32 @@ export function coreInit(userConfig = {}) {
     setPatterns(currentConfig.patterns);
   }
 
+  // Append consumer-declared strictly-necessary entries on top of
+  // whatever's already in the essential category. This is the friendly
+  // alternative to overriding via `patterns.essential` directly.
+  if (
+    (Array.isArray(currentConfig.essentialKeys) && currentConfig.essentialKeys.length > 0) ||
+    (Array.isArray(currentConfig.essentialPatterns) && currentConfig.essentialPatterns.length > 0)
+  ) {
+    appendPatternsToCategory('essential', {
+      keys: currentConfig.essentialKeys,
+      patternStrings: currentConfig.essentialPatterns
+    });
+  }
+
   setCookieChecker(checkConsent);
   setStorageChecker(checkConsent);
   setScriptChecker(checkConsent);
 
-  interceptCookies();
-  interceptStorage();
-  startScriptBlocking(currentConfig.mode, currentConfig.blockedDomains);
+  // Interceptor toggles. By default everything is intercepted (back-compat
+  // with v2.0 / v2.1). Consumers that gate scripts and storage themselves
+  // can opt out per channel via `intercept: { storage: false, … }`.
+  const intercept = currentConfig.intercept || { cookies: true, storage: true, scripts: true };
+  if (intercept.cookies !== false) interceptCookies();
+  if (intercept.storage !== false) interceptStorage();
+  if (intercept.scripts !== false) {
+    startScriptBlocking(currentConfig.mode, currentConfig.blockedDomains);
+  }
 
   const consent = loadConsent();
   initialized = true;
