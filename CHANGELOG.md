@@ -5,6 +5,33 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-04-26
+
+### Added
+
+- **TypeScript declaration files** for both entries:
+  - `dist/zest.d.ts` covers the full UI build (`@freshjuice/zest`)
+  - `dist/zest.headless.d.ts` covers the headless build (`@freshjuice/zest/headless`)
+- `package.json` `exports` map declares `types` for both entries; the
+  legacy top-level `"types": "dist/zest.d.ts"` is also set so older
+  resolvers find them.
+- `scripts/copy-types.js` — postbuild step that copies hand-written
+  declarations from `src/types/` into `dist/` next to the JS bundles.
+- Hand-written types in `src/types/zest.d.ts` and
+  `src/types/zest.headless.d.ts`. Self-contained, no shared imports —
+  resilient to bundler / publish surprises.
+
+### Changed
+
+- `src/headless` subpath export now publishes types alongside the JS,
+  so `import Zest from '@freshjuice/zest/src/headless'` resolves with
+  full type information (the JS path is unchanged).
+
+### Notes
+
+- No runtime changes. All bundles produced by rollup are byte-identical
+  to v2.0.0; the only diff is the new `.d.ts` companions in `dist/`.
+
 ## [2.0.0] - 2026-04-23
 
 ### Added

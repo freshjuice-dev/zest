@@ -1,20 +1,26 @@
 {
   "name": "@freshjuice/zest",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "type": "module",
   "description": "Lightweight cookie consent toolkit for GDPR/CCPA compliance",
   "main": "dist/zest.min.js",
   "module": "dist/zest.esm.min.js",
+  "types": "dist/zest.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/zest.d.ts",
       "import": "./dist/zest.esm.min.js",
       "default": "./dist/zest.min.js"
     },
     "./headless": {
+      "types": "./dist/zest.headless.d.ts",
       "import": "./dist/zest.headless.esm.min.js",
       "default": "./dist/zest.headless.esm.min.js"
     },
-    "./src/headless": "./src/headless.js",
+    "./src/headless": {
+      "types": "./dist/zest.headless.d.ts",
+      "default": "./src/headless.js"
+    },
     "./src/*": "./src/*.js"
   },
   "files": [
@@ -26,6 +32,7 @@
   "scripts": {
     "prebuild": "node scripts/build-langs.js",
     "build": "rollup -c",
+    "postbuild": "node scripts/copy-types.js",
     "build:watch": "rollup -c -w",
     "dev": "rollup -c -w",
     "test": "vitest",
