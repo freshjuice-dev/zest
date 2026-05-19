@@ -11,6 +11,7 @@
 import { interceptCookies, setConsentChecker as setCookieChecker, replayCookies } from './core/cookie-interceptor.js';
 import { interceptStorage, setConsentChecker as setStorageChecker, replayStorage } from './core/storage-interceptor.js';
 import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScripts } from './core/script-blocker.js';
+import { interceptElements, setConsentChecker as setElementChecker, replayElements } from './core/element-interceptor.js';
 import { setPatterns, appendPatternsToCategory } from './core/pattern-matcher.js';
 import { getCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled } from './core/dnt.js';
@@ -42,6 +43,11 @@ function replayAll(categories) {
   replayCookies(categories);
   replayStorage(categories);
   replayScripts(categories);
+  // Element-level replays (script/link/img/iframe URLs that were
+  // dropped at the prototype-setter / setAttribute layer). Network
+  // interceptor (fetch/XHR/sendBeacon) intentionally has no replay
+  // — beacons are one-shot and resending would duplicate analytics.
+  replayElements(categories);
 }
 
 /**
@@ -89,6 +95,7 @@ export function coreInit(userConfig = {}) {
   setCookieChecker(checkConsent);
   setStorageChecker(checkConsent);
   setScriptChecker(checkConsent);
+  setElementChecker(checkConsent);
 
   // Interceptor toggles. By default everything is intercepted (back-compat
   // with v2.0 / v2.1). Consumers that gate scripts and storage themselves
@@ -97,6 +104,13 @@ export function coreInit(userConfig = {}) {
   if (intercept.cookies !== false) interceptCookies();
   if (intercept.storage !== false) interceptStorage();
   if (intercept.scripts !== false) {
+    // Element-level synchronous interception (prototype setters +
+    // setAttribute) installs BEFORE startScriptBlocking so that the
+    // moment any later script does `el.src = "https://tracker..."`,
+    // we drop the URL before the browser fetches. The MutationObserver
+    // inside startScriptBlocking remains as a defence-in-depth net for
+    // anything that slips past (e.g. nodes constructed via cloneNode).
+    interceptElements(currentConfig.mode, currentConfig.blockedDomains);
     startScriptBlocking(currentConfig.mode, currentConfig.blockedDomains);
   }
 
