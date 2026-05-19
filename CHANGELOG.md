@@ -5,6 +5,93 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-05-19
+
+### Fixed
+
+- **Interceptors now install on script eval, not on `DOMContentLoaded`.**
+  Previously the full-build entry (`src/index.js`) waited for
+  `DOMContentLoaded` before calling `init()`, which deferred ALL
+  interceptors — cookies, storage, scripts, and (new in this release)
+  network. The problem: `defer` and `async` tracker scripts execute
+  BEFORE `DOMContentLoaded`. So by the time our interceptors installed,
+  HubSpot, GTM, and similar `defer`-loaded trackers had already fired
+  their pre-consent XHR / fetch / beacon calls. Now `init()` runs
+  synchronously when the bundle is evaluated; only the UI mount
+  (banner / widget, which needs `<body>`) is deferred. Net effect:
+  interceptors land before any other script gets a chance to phone home.
+
+  No config change required. Sites that inline or load Zest at the top
+  of `<head>` (recommended) will see the interceptor coverage they
+  always thought they had.
+
+### Added
+
+- **Network interceptor** — Zest now patches `window.fetch`,
+  `XMLHttpRequest`, and `navigator.sendBeacon` and matches every outbound
+  URL against the same `blockedDomains` + mode-based tracker list that
+  the script blocker already uses. Blocked requests resolve as a
+  Response 204 (fetch) / `error` event (XHR) / `false` return
+  (sendBeacon) so trackers fail cleanly without crashing the page.
+
+  ```js
+  Zest.init({
+    blockedDomains: [
+      { domain: 'track-eu1.hubspot.com', category: 'analytics' }
+    ]
+    // The HubSpot scriptloader at /hs/scriptloader/{id}.js still loads
+    // (first-party path, not blockable by hostname), but its runtime
+    // beacons to track-eu1.hubspot.com are now caught.
+  });
+  ```
+
+- **`intercept.network` toggle** — defaults to `true`. Headless
+  integrations that route their own network calls through the consent
+  layer can opt out with `intercept: { network: false }`.
+
+- **Element interceptor (synchronous setter patches).** Patches
+  `HTMLScriptElement.src`, `HTMLLinkElement.href`, `HTMLImageElement.src`,
+  `HTMLIFrameElement.src`, `Element.prototype.setAttribute`, and the
+  global `Image` constructor so that when code does
+  `el.src = "https://tracker..."` the URL is dropped on the floor
+  BEFORE the browser starts the fetch. Previously the
+  `MutationObserver`-based script blocker fired asynchronously after
+  the DOM mutation, so the browser already had the fetch in flight.
+  Net effect: trackers injected programmatically via `createElement` +
+  `appendChild` no longer leak a network request pre-consent. Gated
+  by the same `intercept.scripts` toggle (it's element-level blocking
+  in the same conceptual layer). Does NOT catch inline HTML
+  `<script src="...">` tags parsed from the original document — only
+  CSP or server-side template modification can prevent those.
+
+  **Replay supported.** Blocked element writes are queued with their
+  category. When consent arrives, `replayElements()` re-applies the
+  URL via the ORIGINAL setter on each element that is still connected
+  to the DOM. Net result: post-consent, scripts / stylesheets /
+  images that were previously blocked execute without requiring a
+  page reload — same UX as the existing cookie / storage / script
+  replay path.
+
+### Why
+
+CMSes increasingly proxy tracker scripts through the site's own origin
+to defeat ad-blockers (HubSpot CMS `/hs/scriptloader/`, Cloudflare
+Zaraz `/cdn-cgi/zaraz/`, server-side GTM, Shopify, Webflow). A
+hostname-based script blocker can't match those `<script>` tags
+because the hostname is first-party. But at runtime the proxied
+script still phones home to the vendor's analytics endpoint via fetch
+/ XHR / sendBeacon — and that URL IS third-party. The network
+interceptor closes that gap.
+
+### Notes
+
+- No replay. Network requests are one-shot and time-sensitive;
+  replaying a stale beacon after consent would create confusing
+  duplicate data. Blocked requests are dropped, not queued.
+- Internal Zest code does not make any network calls today. If we add
+  any, they will be routed through the captured `originalFetch` so the
+  patch doesn't recurse.
+
 ## [2.2.0] - 2026-04-26
 
 ### Added
