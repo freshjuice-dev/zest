@@ -119,18 +119,29 @@ function handleCloseModal() {
 }
 
 /**
- * Initialize Zest with UI.
+ * UI mount guard. We split UI mounting (which needs `<body>` and a parsed
+ * DOM) from interceptor installation (which must happen on script eval to
+ * gate any later `defer` / `async` tracker scripts). `coreInit()` is
+ * idempotent so calling init() before the DOM is ready is safe — the UI
+ * portion just gets queued.
  */
-function init(userConfig = {}) {
-  const { alreadyInitialized, consent, hasDecision, dntApplied } = coreInit(userConfig);
-  if (alreadyInitialized) {
-    console.warn('[Zest] Already initialized');
-    return Zest;
+let uiMounted = false;
+
+function mountUI() {
+  if (uiMounted) return;
+
+  // Banner needs document.body to mount its host element. If body isn't
+  // there yet, requeue on DOMContentLoaded.
+  if (!document || !document.body) {
+    document.addEventListener('DOMContentLoaded', mountUI, { once: true });
+    return;
   }
 
+  uiMounted = true;
   const config = getActiveConfig();
+  const decision = hasConsentDecision();
 
-  if (!hasDecision && !dntApplied) {
+  if (!decision) {
     showBanner({
       onAcceptAll: handleAcceptAll,
       onRejectAll: handleRejectAll,
@@ -140,7 +151,27 @@ function init(userConfig = {}) {
   } else if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
+}
 
+/**
+ * Initialize Zest with UI.
+ *
+ * Splits into two phases:
+ *
+ *   1. `coreInit()` runs synchronously: interceptors install on the
+ *      cookie / storage / script / network channels immediately so any
+ *      `defer` or `async` script that fires later is already gated.
+ *      Critical — DOMContentLoaded fires AFTER `defer` scripts execute,
+ *      so deferring interceptor install means trackers fire first.
+ *
+ *   2. UI mount (banner / widget) is queued until `<body>` exists. If
+ *      this script runs in `<head>` while the document is still
+ *      parsing, that means waiting for DOMContentLoaded; if it runs
+ *      after, mount happens immediately.
+ */
+function init(userConfig = {}) {
+  coreInit(userConfig);
+  mountUI();
   return Zest;
 }
 
@@ -249,17 +280,14 @@ if (typeof window !== 'undefined') {
     window.Zest = Zest;
   }
 
-  const autoInit = () => {
-    const cfg = getConfig();
-    if (cfg.autoInit !== false) {
-      init(window.ZestConfig);
-    }
-  };
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoInit);
-  } else {
-    autoInit();
+  // Run init() synchronously on script eval. init() itself splits the
+  // work — interceptors install now, UI mount waits for <body> if
+  // needed. No DOMContentLoaded wait at this layer: deferring init()
+  // would let any `defer` / `async` tracker script fire its network
+  // calls before our interceptors are in place.
+  const cfg = getConfig();
+  if (cfg.autoInit !== false) {
+    init(window.ZestConfig);
   }
 }
 
