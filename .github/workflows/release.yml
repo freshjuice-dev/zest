@@ -62,6 +62,16 @@ jobs:
           cp dist/zest.d.ts                "artifacts/zest.d.ts"
           cp dist/zest.headless.d.ts       "artifacts/zest.headless.d.ts"
 
+          # Per-language IIFE builds — single-locale sites can grab one
+          # of these (~42 KB) instead of the multi-language bundle (~56 KB).
+          for f in dist/zest.*.min.js; do
+            name=$(basename "$f")
+            case "$name" in
+              zest.esm.min.js|zest.headless.esm.min.js) continue ;;
+            esac
+            cp "$f" "artifacts/$name"
+          done
+
           (cd artifacts && sha256sum * > SHA256SUMS.txt)
           ls -lh artifacts/
 
