@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to build and attach artifacts to (e.g. v2.3.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve target tag
+        id: target
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            echo "tag=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target.outputs.tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build
+
+      - name: Package artifacts
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.target.outputs.tag }}"
+          mkdir -p artifacts
+
+          tar -czf "artifacts/zest-${TAG}.tar.gz" -C dist .
+          (cd dist && zip -qr "../artifacts/zest-${TAG}.zip" .)
+
+          cp dist/zest.min.js              "artifacts/zest.min.js"
+          cp dist/zest.esm.min.js          "artifacts/zest.esm.min.js"
+          cp dist/zest.headless.esm.min.js "artifacts/zest.headless.esm.min.js"
+          cp dist/zest.d.ts                "artifacts/zest.d.ts"
+          cp dist/zest.headless.d.ts       "artifacts/zest.headless.d.ts"
+
+          (cd artifacts && sha256sum * > SHA256SUMS.txt)
+          ls -lh artifacts/
+
+      - name: Upload artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.target.outputs.tag }}
+          files: artifacts/*
+          fail_on_unmatched_files: true
