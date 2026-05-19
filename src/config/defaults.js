@@ -71,7 +71,8 @@ export const DEFAULTS = {
   intercept: {
     cookies: true,
     storage: true,
-    scripts: true
+    scripts: true,
+    network: true
   },
 
   // Strictly-necessary declarations. Both fields *append* to whatever

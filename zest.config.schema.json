@@ -212,6 +212,32 @@
         }
       }
     },
+    "intercept": {
+      "type": "object",
+      "description": "Granular toggles for Zest's interceptor layer. Default is true on every channel.",
+      "properties": {
+        "cookies": {
+          "type": "boolean",
+          "default": true,
+          "description": "Intercept document.cookie writes"
+        },
+        "storage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Intercept localStorage / sessionStorage writes"
+        },
+        "scripts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Block third-party tracker <script> tags before they execute"
+        },
+        "network": {
+          "type": "boolean",
+          "default": true,
+          "description": "Intercept fetch / XMLHttpRequest / navigator.sendBeacon calls. Catches trackers that ship via CMS first-party proxies (HubSpot, Cloudflare Zaraz, server-side GTM) where the <script> tag is same-origin but the runtime beacon is third-party."
+        }
+      }
+    },
     "callbacks": {
       "type": "object",
       "description": "Callback functions for consent events",

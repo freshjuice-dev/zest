@@ -95,6 +95,13 @@ export interface InterceptToggles {
   cookies?: boolean;
   storage?: boolean;
   scripts?: boolean;
+  /**
+   * fetch / XMLHttpRequest / navigator.sendBeacon interception. Catches
+   * trackers that ship via CMS first-party proxies (HubSpot, Cloudflare
+   * Zaraz, server-side GTM) where the <script> tag is same-origin but
+   * the runtime beacon is third-party.
+   */
+  network?: boolean;
 }
 
 /** Configuration accepted by `init()` and `window.ZestConfig`. */
