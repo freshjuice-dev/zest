@@ -39,7 +39,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # Root-only: the release artifact is the root package's dist/. Installing
+        # the workspace plugins here would try to resolve their peer dep
+        # @freshjuice/zest@^X from npm before that version is published — a
+        # bootstrap deadlock. The plugins are published separately.
+        run: npm ci --no-workspaces
 
       - name: Build
         run: npm run build
