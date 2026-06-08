@@ -63,6 +63,13 @@ function createModalHTML(config, consent) {
     ? `<a href="${escapeHTML(validatedPolicyUrl)}" class="zest-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>`
     : '';
 
+  // "Powered by Zest" attribution — on by default, removed when branding:false.
+  const branding = config.branding !== false
+    ? `<div class="zest-modal__powered">
+          <a href="https://cookiezest.com" class="zest-powered-link" target="_blank" rel="noopener noreferrer">Powered by Zest</a>
+        </div>`
+    : '';
+
   return `
     <div class="zest-modal-overlay" role="dialog" aria-modal="true" aria-label="${escapeHTML(labels.title)}">
       <div class="zest-modal">
@@ -84,6 +91,7 @@ function createModalHTML(config, consent) {
             ${escapeHTML(labels.rejectAll)}
           </button>
         </div>
+        ${branding}
       </div>
     </div>
   `;

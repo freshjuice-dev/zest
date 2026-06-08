@@ -43,6 +43,69 @@ export interface InitSnapshot {
   consent: ConsentState;
   hasDecision: boolean;
   dntApplied: boolean;
+  /**
+   * True when geo gating is configured and resolution is still in flight (no
+   * decision recorded yet). The UI is held until the verdict lands. When
+   * `false`, geo is either off, already resolved, or moot (a decision exists).
+   */
+  geoPending: boolean;
+}
+
+/**
+ * The experience a geo decision resolves to:
+ * - `'consent'` — opt-in: stay blocked, show the full banner (GDPR/EEA/UK).
+ * - `'notice'`  — opt-out: allow tracking, show a "Do Not Sell" link (US).
+ * - `'allow'`   — no applicable law: release the queues, show nothing.
+ * - `'block'`   — keep everything blocked, show nothing (fail-closed).
+ */
+export type GeoAction = 'consent' | 'notice' | 'allow' | 'block';
+
+/**
+ * Sanitized jurisdiction verdict — the shape every geo source MUST return
+ * (the `/privacy` response of the zest-geo gateway). Untrusted input is
+ * coerced to this before any decision is made.
+ */
+export interface GeoVerdict {
+  isEU: boolean;
+  isEEA: boolean;
+  isGDPR: boolean;
+  isCCPA: boolean;
+  isUSPrivacy: boolean;
+  /** Every regime that applies, e.g. `['GDPR']`, `['CCPA', 'CPRA']`. */
+  regulations: string[];
+  /** ISO 3166-1 alpha-2, when the source provides it. */
+  country?: string;
+  /** Region/state code (e.g. `'CA'`), when provided. */
+  regionCode?: string;
+  /** Continent code (e.g. `'EU'`), when provided. */
+  continent?: string;
+}
+
+/**
+ * Opt-in geo / jurisdiction gating. Supply a source (hosted gateway, a
+ * self-hosted `endpoint`, or your own `resolver`) and optionally a `decide`
+ * mapper. Omit the whole block to show the banner to everyone (the default).
+ */
+export interface GeoConfig {
+  /** Use the hosted gateway at `https://geo.cookiezest.com/privacy`. */
+  provider?: 'gateway';
+  /** A self-hosted zest-geo `/privacy` URL (http/https only). */
+  endpoint?: string;
+  /**
+   * Supply the verdict yourself (sync or async) — e.g. from a CDN geo header
+   * your edge already sets. Must return the {@link GeoVerdict} shape.
+   * Takes precedence over `provider` / `endpoint`.
+   */
+  resolver?: () => GeoVerdict | Promise<GeoVerdict>;
+  /**
+   * Map a verdict to an action. Defaults to: GDPR → `'consent'`,
+   * US-privacy → `'notice'`, otherwise `'allow'`.
+   */
+  decide?: (verdict: GeoVerdict) => GeoAction;
+  /** Milliseconds before resolution gives up. Default `1500` (100–10000). */
+  timeout?: number;
+  /** Action to apply if resolution fails/times out. Default `'consent'`. */
+  fallback?: GeoAction;
 }
 
 /** Tamper-evident proof of the user's last consent decision. */
@@ -81,6 +144,12 @@ export interface ZestCallbacks {
   onReject?: (consent: ConsentState) => void;
   onChange?: (consent: ConsentState) => void;
   onReady?: (consent: ConsentState) => void;
+  /**
+   * Fired once geo resolution completes with the chosen action and the
+   * sanitized verdict (`null` when resolution failed and the fallback was
+   * applied). Only fires when `geo` is configured.
+   */
+  onGeo?: (action: GeoAction, verdict: GeoVerdict | null) => void;
 }
 
 /**
@@ -121,6 +190,12 @@ export interface InitOptions {
   policyUrl?: string;
   /** Show floating "manage cookies" widget after a decision. Default `true`. */
   showWidget?: boolean;
+  /**
+   * Show the "Powered by Zest" attribution link on the banner and settings
+   * modal (links to https://cookiezest.com). Default `true`; set `false` to
+   * remove it.
+   */
+  branding?: boolean;
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
   /** Script-blocking mode. Default `'safe'`. */
@@ -133,6 +208,12 @@ export interface InitOptions {
   dntBehavior?: DNTBehavior;
   /** Disable individual interceptors. Default: all on. */
   intercept?: InterceptToggles;
+  /**
+   * Opt-in geo / jurisdiction gating. Omit to show the banner to everyone
+   * (the default). Pass `true` as shorthand for the hosted gateway
+   * (`{ provider: 'gateway' }`), or a {@link GeoConfig} for full control.
+   */
+  geo?: GeoConfig | true;
   /**
    * Exact storage / cookie names to treat as strictly-necessary. Each
    * is appended to the essential category as a fully-anchored regex,
@@ -164,6 +245,7 @@ export interface ZestEvents {
   CHANGE: 'zest:change';
   SHOW: 'zest:show';
   HIDE: 'zest:hide';
+  GEO: 'zest:geo';
 }
 
 export type ZestEventName = ZestEvents[keyof ZestEvents];

@@ -4,6 +4,8 @@
 
 import { DEFAULT_CATEGORIES } from '../core/categories.js';
 import { detectLanguage, getTranslation } from '../i18n/translations.js';
+import { safeUrl } from '../core/security.js';
+import { GEO_ACTIONS } from '../core/geo.js';
 
 export const DEFAULTS = {
   // Language: 'auto' | 'en' | 'de' | 'es' | 'fr' | 'it' | 'pt' | 'nl' | 'pl' | 'uk' | 'ru' | 'ja' | 'zh'
@@ -37,6 +39,11 @@ export const DEFAULTS = {
     },
     widget: {
       label: 'Cookie Settings'
+    },
+    notice: {
+      title: 'Your Privacy Choices',
+      optOut: 'Do Not Sell or Share My Personal Information',
+      dismiss: 'Dismiss'
     }
   },
 
@@ -44,6 +51,10 @@ export const DEFAULTS = {
   autoInit: true,
   showWidget: true,
   expiration: 365,
+
+  // Show a small "Powered by Zest" attribution link at the bottom of the
+  // settings modal. Enabled by default; set to false to remove it.
+  branding: true,
 
   // Do Not Track / Global Privacy Control
   // respectDNT: true = respect DNT/GPC signals
@@ -98,14 +109,69 @@ export const DEFAULTS = {
   policyUrl: null,
   imprintUrl: null,
 
+  // Geo / jurisdiction gating (opt-in). null = off (show to everyone).
+  // When set, Zest resolves the visitor's jurisdiction and decides which
+  // experience to present (full banner / "Do Not Sell" notice / nothing).
+  // See src/core/geo.js for the verdict shape and action vocabulary.
+  //   geo: {
+  //     provider: 'gateway',        // use https://geo.cookiezest.com/privacy
+  //     endpoint: 'https://…',      // OR a self-hosted zest-geo /privacy URL
+  //     resolver: async () => ({ isGDPR, isUSPrivacy, … }), // OR your own fn
+  //     decide(geo) { … return 'consent' | 'notice' | 'allow' | 'block' },
+  //     timeout: 1500,              // ms before falling back
+  //     fallback: 'consent'         // action when resolution fails (fail-closed)
+  //   }
+  geo: null,
+
   // Callbacks
   callbacks: {
     onAccept: null,
     onReject: null,
     onChange: null,
-    onReady: null
+    onReady: null,
+    // Fired once geo resolution completes: (action, verdict) where action is
+    // 'consent' | 'notice' | 'allow' | 'block' and verdict is the sanitized
+    // jurisdiction object (or null on failure). Primary hook for headless.
+    onGeo: null
   }
 };
+
+/**
+ * Validate and normalise the opt-in `geo` config block. Unknown / unsafe
+ * values are dropped; `endpoint` must be an http(s) URL. Returns null when no
+ * usable source is present.
+ *
+ * Accepts `geo: true` as a shorthand for the hosted gateway — the simplest
+ * "just turn geo on" form, equivalent to `{ provider: 'gateway' }`.
+ */
+function normalizeGeoConfig(geo) {
+  if (geo === true) return { provider: 'gateway', timeout: 1500, fallback: 'consent' };
+  if (!geo || typeof geo !== 'object' || Array.isArray(geo)) return null;
+
+  const out = {};
+
+  if (geo.provider === 'gateway') out.provider = 'gateway';
+
+  if (typeof geo.endpoint === 'string') {
+    const url = safeUrl(geo.endpoint);
+    if (url && /^https?:/i.test(url)) out.endpoint = url;
+  }
+
+  if (typeof geo.resolver === 'function') out.resolver = geo.resolver;
+  if (typeof geo.decide === 'function') out.decide = geo.decide;
+
+  out.timeout = (typeof geo.timeout === 'number' && geo.timeout >= 100 && geo.timeout <= 10000)
+    ? geo.timeout
+    : 1500;
+
+  out.fallback = GEO_ACTIONS.includes(geo.fallback) ? geo.fallback : 'consent';
+
+  // No explicit source given -> default to the hosted gateway, which is the
+  // common "just turn geo on" intent (e.g. data-geo="on").
+  if (!out.resolver && !out.endpoint && !out.provider) out.provider = 'gateway';
+
+  return out;
+}
 
 /**
  * Merge user config with defaults (deep merge)
@@ -118,7 +184,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'branding'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
@@ -148,6 +214,11 @@ export function mergeConfig(userConfig) {
       ...DEFAULTS.labels.widget,
       ...translationLabels.widget,
       ...userLabels.widget
+    },
+    notice: {
+      ...DEFAULTS.labels.notice,
+      ...translationLabels.notice,
+      ...userLabels.notice
     }
   };
 
@@ -193,6 +264,11 @@ export function mergeConfig(userConfig) {
     config.essentialPatterns = userConfig.essentialPatterns.filter(
       (p) => typeof p === 'string' && p.length > 0 && p.length <= 500
     );
+  }
+
+  // Geo / jurisdiction gating (opt-in, validated).
+  if (userConfig.geo !== undefined) {
+    config.geo = normalizeGeoConfig(userConfig.geo);
   }
 
   return config;

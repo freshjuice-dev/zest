@@ -5,6 +5,104 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0] - 2026-06-08
+
+### Added
+
+- **Geo / jurisdiction gating (opt-in).** Zest can now resolve the visitor's
+  location and decide *which* consent experience to present — instead of
+  showing the same banner to everyone. Off by default; turn it on with a
+  single flag:
+
+  ```js
+  window.ZestConfig = { geo: true };   // uses the hosted gateway
+  ```
+
+  Default behaviour once enabled, matching the legal model:
+
+  | Jurisdiction | Action | Experience |
+  |---|---|---|
+  | GDPR / EEA / UK | `'consent'` | opt-in — stay blocked, show the full banner |
+  | US state-privacy (CCPA et al.) | `'notice'` | opt-out — allow tracking, show a small "Do Not Sell My Data" link |
+  | everywhere else | `'allow'` | no banner, release the queues |
+
+  **The verdict source is pluggable.** `geo: true` (or `{ provider: 'gateway' }`)
+  uses the hosted **zest-geo** gateway at `https://geo.cookiezest.com/privacy`
+  (Cloudflare Worker, stores nothing). Self-host it via `geo.endpoint`, or
+  supply your own with `geo.resolver()` — e.g. reading a CDN geo header your
+  edge already sets (`CF-IPCountry`, `x-vercel-ip-country`). Every source
+  returns the same shape: `{ isEU, isEEA, isGDPR, isCCPA, isUSPrivacy,
+  regulations[] }`.
+
+  ```js
+  window.ZestConfig = {
+    geo: {
+      // provider: 'gateway' | endpoint: 'https://…' | resolver: async () => ({…})
+      decide: (geo) => geo.isGDPR ? 'consent' : geo.isUSPrivacy ? 'notice' : 'allow',
+      timeout: 1500,        // ms before falling back
+      fallback: 'consent'   // fail-closed action on error/timeout
+    }
+  };
+  ```
+
+  Action vocabulary: `'consent'` (opt-in banner), `'notice'` (opt-out "Do Not
+  Sell" link), `'allow'` (release, no UI), `'block'` (stay blocked, no UI).
+  A `decide()` return outside this set is clamped to `fallback`.
+
+- **`geo: true` shorthand** — equivalent to `{ provider: 'gateway' }`, the
+  simplest "just turn geo on" form. `data-geo="on"` is the attribute equivalent.
+
+- **"Do Not Sell" notice UI** (full build) — a minimal, dismissible Shadow-DOM
+  link shown for the `'notice'` action. Not a consent gate: tracking already
+  runs (opt-out model), the link flips to a full reject. New `labels.notice`
+  (`title`, `optOut`, `dismiss`).
+
+- **`onGeo(action, verdict)` callback** and **`zest:geo` event** — fire once
+  resolution completes. The primary hook for headless, which renders no UI.
+
+- **`Zest.resolveGeo()`** (headless) — await the `{ action, verdict }` result
+  directly instead of listening for the event. `init()` triggers resolution
+  automatically when `geo` is configured.
+
+- **"Powered by Zest" branding** — a small attribution link (→
+  `https://cookiezest.com`) now appears on the banner and the settings modal.
+  Enabled by default; remove it with `branding: false` (or
+  `data-branding="false"`). Full build only — headless renders no UI.
+
+- **Astro integration** — `@freshjuice/zest-astro`. Injects the Zest IIFE
+  inline into `<head>` at build time (interceptors install before any other
+  script, no extra HTTP request). Pass runtime config — including `geo: true`
+  — through the integration options.
+
+- **Eleventy (11ty) plugin** — `@freshjuice/zest-eleventy`. Auto-injects the
+  Zest IIFE into the `<head>` of every rendered `.html` page. Same
+  before-everything-else guarantee, no extra request.
+
+### Security
+
+- Geo verdicts are untrusted input (they cross the network or come from
+  consumer code), so every field is coerced through `sanitizeVerdict()` before
+  any decision — booleans forced, `regulations[]` filtered to short strings and
+  capped, unknown keys dropped (prototype-pollution safe). `geo.endpoint` is
+  validated with `safeUrl()` (http/https only). On failure or timeout, geo
+  fails **closed** to the `fallback` action (default `'consent'`).
+
+### Notes
+
+- **No behavioural change unless you opt in.** With no `geo` key, Zest shows
+  the banner to everyone exactly as before.
+- **Sync interceptors, async geo.** Interceptors still install synchronously on
+  script eval (trackers stay blocked); geo resolves asynchronously and the UI
+  is held until the verdict lands. In `allow` / `notice` regions trackers are
+  briefly deferred (~the gateway round-trip) before release — correct
+  fail-closed behaviour, not a regression.
+- **Geo works in headless too** — the resolver lives in the shared core; only
+  the visual notice is full-build-only.
+- In the Astro / Eleventy plugins, config is serialised to an inline
+  `window.ZestConfig`, so the serialisable geo forms (`geo: true`, `provider`,
+  `endpoint`, `timeout`, `fallback`) work; the function forms (`resolver` /
+  `decide`) do not survive serialisation — use them in client-side JS instead.
+
 ## [2.3.0] - 2026-05-19
 
 ### Fixed

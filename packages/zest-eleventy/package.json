@@ -1,0 +1,70 @@
+{
+  "name": "@freshjuice/zest-eleventy",
+  "version": "2.4.0",
+  "type": "module",
+  "description": "Eleventy (11ty) plugin for Zest cookie consent toolkit (GDPR/CCPA)",
+  "keywords": [
+    "eleventy",
+    "eleventy-plugin",
+    "11ty",
+    "11ty-plugin",
+    "cookie",
+    "consent",
+    "gdpr",
+    "ccpa",
+    "privacy",
+    "cookie-consent",
+    "cookie-banner",
+    "zest"
+  ],
+  "author": {
+    "name": "FreshJuice",
+    "email": "contact@freshjuice.dev",
+    "url": "https://freshjuice.dev/"
+  },
+  "contributors": [
+    {
+      "name": "Alex Zappa",
+      "email": "alex@zappa.dev",
+      "url": "https://alex.zappa.dev/"
+    }
+  ],
+  "license": "MIT",
+  "main": ".eleventy.cjs",
+  "module": ".eleventy.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./.eleventy.js",
+      "require": "./.eleventy.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    ".eleventy.js",
+    ".eleventy.cjs",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@freshjuice/zest": "^2.4.0",
+    "@11ty/eleventy": ">=2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/freshjuice-dev/zest.git",
+    "directory": "packages/zest-eleventy"
+  },
+  "homepage": "https://zest.freshjuice.dev/",
+  "bugs": {
+    "url": "https://github.com/freshjuice-dev/zest/issues"
+  }
+}

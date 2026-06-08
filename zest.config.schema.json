@@ -55,6 +55,11 @@
       "default": true,
       "description": "Show floating widget after consent is given"
     },
+    "branding": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the 'Powered by Zest' attribution link on the banner and settings modal (links to https://cookiezest.com). Set to false to remove it."
+    },
     "expiration": {
       "type": "integer",
       "minimum": 1,
@@ -238,6 +243,50 @@
         }
       }
     },
+    "geo": {
+      "description": "Opt-in geo / jurisdiction gating. Off by default (show the banner to everyone). `true` is shorthand for the hosted gateway; an object gives full control over the verdict source and decision.",
+      "default": false,
+      "oneOf": [
+        {
+          "type": "boolean",
+          "description": "true = use the hosted zest-geo gateway (https://geo.cookiezest.com/privacy). Equivalent to { provider: 'gateway' }."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "enum": ["gateway"],
+              "description": "Use the hosted zest-geo gateway."
+            },
+            "endpoint": {
+              "type": "string",
+              "format": "uri",
+              "description": "A self-hosted zest-geo /privacy URL (http/https only)."
+            },
+            "resolver": {
+              "description": "Function returning the verdict yourself (sync or async): { isEU, isEEA, isGDPR, isCCPA, isUSPrivacy, regulations[] }. Takes precedence over provider/endpoint. JS-only — not settable via data attributes or serialised plugin config."
+            },
+            "decide": {
+              "description": "Function mapping a verdict to an action ('consent' | 'notice' | 'allow' | 'block'). Defaults to: GDPR -> consent, US-privacy -> notice, otherwise allow. JS-only."
+            },
+            "timeout": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 10000,
+              "default": 1500,
+              "description": "Milliseconds before resolution gives up."
+            },
+            "fallback": {
+              "type": "string",
+              "enum": ["consent", "notice", "allow", "block"],
+              "default": "consent",
+              "description": "Action applied if resolution fails or times out (fail-closed)."
+            }
+          }
+        }
+      ]
+    },
     "callbacks": {
       "type": "object",
       "description": "Callback functions for consent events",
@@ -253,6 +302,9 @@
         },
         "onReady": {
           "description": "Called when Zest is initialized"
+        },
+        "onGeo": {
+          "description": "Called once geo resolution completes: (action, verdict). action is 'consent' | 'notice' | 'allow' | 'block'; verdict is the sanitized jurisdiction object, or null on failure. Only fires when `geo` is configured."
         }
       }
     }

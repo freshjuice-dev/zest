@@ -33,6 +33,7 @@ import {
   coreRejectAll,
   coreUpdateConsent,
   coreReset,
+  coreResolveGeo,
   isInitialized,
   getActiveConfig
 } from './core-lifecycle.js';
@@ -50,9 +51,31 @@ import { EVENTS, on, once } from './storage/events.js';
 
 function init(userConfig = {}) {
   const snapshot = coreInit(userConfig);
+
+  // If geo gating is configured, kick off resolution. Headless renders no UI,
+  // so the result reaches the consumer via the `zest:geo` event and the
+  // `onGeo` callback (action + verdict). Callers should branch on
+  // `snapshot.geoPending`: when true, wait for `zest:geo` before deciding
+  // whether to show their banner rather than reading hasConsentDecision()
+  // immediately (it's still false until the verdict lands).
+  if (snapshot.geoPending) {
+    coreResolveGeo();
+  }
+
   // Headless returns the snapshot so callers can decide whether to
-  // render their banner / settings UI based on hasDecision / dntApplied.
+  // render their banner / settings UI based on hasDecision / dntApplied /
+  // geoPending.
   return snapshot;
+}
+
+/**
+ * Manually resolve the visitor's jurisdiction. Normally init() triggers this
+ * automatically when `geo` is configured; exposed so headless consumers can
+ * await the `{ action, verdict }` result directly instead of listening for the
+ * event. No-op (resolves null) when geo is off or a decision already exists.
+ */
+function resolveGeo() {
+  return coreResolveGeo();
 }
 
 function acceptAll() {
@@ -98,6 +121,9 @@ const Zest = {
   updateConsent,
   reset,
 
+  // Geo
+  resolveGeo,
+
   // DNT introspection
   isDoNotTrackEnabled,
   getDNTDetails,
@@ -120,6 +146,7 @@ export {
   rejectAll,
   updateConsent,
   reset,
+  resolveGeo,
   getConsent,
   hasConsent,
   hasConsentDecision,

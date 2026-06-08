@@ -430,6 +430,30 @@ export function generateStyles(config) {
   text-decoration: underline;
 }
 
+/* "Powered by Zest" attribution (banner + modal) */
+.zest-banner__powered {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.zest-modal__powered {
+  padding: 0 20px 16px;
+  text-align: center;
+}
+
+.zest-powered-link {
+  font-size: 12px;
+  color: var(--zest-text-secondary);
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.zest-powered-link:hover {
+  color: var(--zest-accent);
+  text-decoration: underline;
+  opacity: 1;
+}
+
 /* Mobile */
 @media (max-width: 480px) {
   .zest-banner {
@@ -516,4 +540,4 @@ function adjustColor(hex, percent) {
 /**
  * Cookie icon SVG
  */
-export const COOKIE_ICON = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10c0-.728-.078-1.437-.225-2.12a1 1 0 0 0-1.482-.63 3 3 0 0 1-4.086-3.72 1 1 0 0 0-.793-1.263A10.05 10.05 0 0 0 12 2zm0 2c.178 0 .354.006.528.017a5 5 0 0 0 5.955 5.955c.011.174.017.35.017.528 0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8zm-4 6a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-2 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>`;
+export const COOKIE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M164.49,163.51a12,12,0,1,1-17,0A12,12,0,0,1,164.49,163.51Zm-81-8a12,12,0,1,0,17,0A12,12,0,0,0,83.51,155.51Zm9-39a12,12,0,1,0-17,0A12,12,0,0,0,92.49,116.49Zm48-1a12,12,0,1,0,0,17A12,12,0,0,0,140.49,115.51ZM232,128A104,104,0,1,1,128,24a8,8,0,0,1,8,8,40,40,0,0,0,40,40,8,8,0,0,1,8,8,40,40,0,0,0,40,40A8,8,0,0,1,232,128Zm-16.31,7.39A56.13,56.13,0,0,1,168.5,87.5a56.13,56.13,0,0,1-47.89-47.19,88,88,0,1,0,95.08,95.08Z"/></svg>`;

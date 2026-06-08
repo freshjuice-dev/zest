@@ -7,11 +7,12 @@
 
 A lightweight cookie consent toolkit for GDPR/CCPA compliance.
 
-- **Lightweight** — ~9KB gzipped (single language) / ~16KB (all 12 languages) / ~11KB (headless)
+- **Lightweight** — ~14KB gzipped (single language) / ~19KB (all 12 languages) / ~14KB (headless)
 - **Zero dependencies** — Vanilla JavaScript
 - **Shadow DOM** — Styles isolated from your site
 - **Headless mode** — Bring your own UI & CSS, use only the consent engine
 - **Privacy-first** — Respects Do Not Track / Global Privacy Control
+- **Geo-aware** — Optional jurisdiction gating: full GDPR banner in the EU, a "Do Not Sell" link in the US, nothing elsewhere — via the built-in [zest-geo](https://geo.cookiezest.com/) gateway or your own resolver
 - **Security-hardened** — XSS-safe templating, URL/color/regex validation, locked interceptors
 
 ## Quick Start
@@ -50,10 +51,37 @@ Zest.init({ mode: 'safe', policyUrl: '/privacy' });
 
 | Entry | What you get | Min / Gzip |
 |---|---|---|
-| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~50 KB / **~16 KB** |
-| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~31 KB / **~11 KB** |
+| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~62 KB / **~19 KB** |
+| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~40 KB / **~14 KB** |
 
 Use **headless** when you want full control over markup and styling.
+
+## Framework integrations
+
+Official plugins inject the Zest IIFE **inline** into `<head>` at build time, so
+interceptors install before any other script — with no extra HTTP request. Pass
+runtime config (including `geo: true`) straight through.
+
+| Package | Framework | Docs |
+|---|---|---|
+| [`@freshjuice/zest-astro`](packages/zest-astro) | Astro 3 / 4 / 5 / 6 | [README](packages/zest-astro/README.md) |
+| [`@freshjuice/zest-eleventy`](packages/zest-eleventy) | Eleventy (11ty) 2+ | [README](packages/zest-eleventy/README.md) |
+
+```js
+// astro.config.mjs
+import zest from '@freshjuice/zest-astro';
+
+export default defineConfig({
+  integrations: [
+    zest({ language: 'en', config: { theme: 'auto', geo: true, policyUrl: '/privacy' } })
+  ]
+});
+```
+
+> Config is serialised into an inline `window.ZestConfig`, so serialisable geo
+> forms (`geo: true`, `provider`, `endpoint`, `timeout`, `fallback`) work. The
+> function forms (`resolver` / `decide`) can't be serialised — use those in
+> client-side JS instead.
 
 ## Configuration
 
@@ -76,15 +104,24 @@ window.ZestConfig = {
   // Show floating widget after consent
   showWidget: true,
 
+  // Show the "Powered by Zest" link on the banner & modal (default: true)
+  branding: true,
+
   // Consent expiration in days
   expiration: 365,
+
+  // Geo gating — off by default. `true` uses the hosted gateway; pass an
+  // object for a custom endpoint / resolver / decide(). See the
+  // "Geolocation / jurisdiction gating" section.
+  geo: false,
 
   // Callbacks — wrapped in try/catch internally, safe to throw
   callbacks: {
     onAccept: (consent) => {},
     onReject: () => {},
     onChange: (consent) => {},
-    onReady: (consent) => {}
+    onReady: (consent) => {},
+    onGeo: (action, verdict) => {}   // fires when `geo` is configured
   }
 };
 ```
@@ -98,8 +135,13 @@ window.ZestConfig = {
   data-theme="dark"
   data-accent="#0071e3"
   data-policy-url="/privacy"
+  data-geo="on"
+  data-branding="false"
 ></script>
 ```
+
+> `data-geo="on"` enables the hosted gateway. The `resolver` / `decide`
+> callbacks are JavaScript-only — use `window.ZestConfig.geo` for those.
 
 ## API
 
@@ -126,10 +168,13 @@ Zest.updateConsent({ analytics: true, marketing: false })  // headless only
 Zest.isDoNotTrackEnabled()
 Zest.getDNTDetails()           // { enabled, source: 'dnt'|'gpc'|null }
 
+// Geo / jurisdiction (when `geo` is configured — see below)
+Zest.resolveGeo()              // headless: await { action, verdict }
+
 // Events — subscribe helpers (also work with addEventListener)
 Zest.on('zest:change', (e) => {})
 Zest.once('zest:ready', (e) => {})
-Zest.EVENTS                    // { READY, CONSENT, REJECT, CHANGE, SHOW, HIDE }
+Zest.EVENTS                    // { READY, CONSENT, REJECT, CHANGE, SHOW, HIDE, GEO }
 ```
 
 ## Headless mode — bring your own UI
@@ -198,6 +243,108 @@ Zest.isDoNotTrackEnabled()  // true if DNT or GPC is enabled
 Zest.getDNTDetails()        // { enabled: boolean, source: 'dnt' | 'gpc' | null }
 ```
 
+## Geolocation / jurisdiction gating
+
+By default Zest shows the banner to **everyone**. Opt into geo gating and it
+resolves the visitor's location and decides *which* experience to present:
+
+```javascript
+window.ZestConfig = { geo: true };   // that's it
+```
+
+Default behaviour once enabled, matching the legal model:
+
+| Jurisdiction | Action | What the visitor sees |
+|---|---|---|
+| GDPR / EEA / UK | `consent` | Opt-in — full banner, tracking blocked until they choose |
+| US state-privacy (CCPA, CPRA, VCDPA…) | `notice` | Opt-out — tracking runs, a small **"Do Not Sell or Share My Personal Information"** link |
+| Everywhere else | `allow` | Nothing — tracking allowed, no UI |
+
+`geo: true` is shorthand for `{ provider: 'gateway' }`, which uses the hosted
+**[zest-geo](https://geo.cookiezest.com/)** gateway — a Cloudflare Worker that
+reads the edge geo of the request and returns the applicable privacy regimes.
+It stores nothing, logs nothing, and the `/privacy` endpoint carries no IP /
+city / coordinates. Zero infrastructure on your side.
+
+### Choosing the verdict source
+
+```javascript
+window.ZestConfig = {
+  geo: {
+    // Pick ONE source:
+    provider: 'gateway',                          // hosted zest-geo (default)
+    // endpoint: 'https://geo.example.com/privacy', // your self-hosted zest-geo
+    // resolver: async () => ({ isGDPR, isUSPrivacy, isCCPA, isEU, isEEA, regulations }),
+
+    // Optional — map the verdict to an action (this is the default):
+    decide: (geo) =>
+      geo.isGDPR ? 'consent' : geo.isUSPrivacy ? 'notice' : 'allow',
+
+    timeout: 1500,        // ms before giving up
+    fallback: 'consent'   // action if resolution fails/times out (fail-closed)
+  }
+};
+```
+
+The **`resolver`** option is the recommended path if your CDN already knows the
+country — read its geo header (`CF-IPCountry`, `x-vercel-ip-country`, etc.) and
+return the verdict yourself, no extra request. Whatever the source, it must
+return the gateway's shape:
+
+```ts
+{ isEU, isEEA, isGDPR, isCCPA, isUSPrivacy: boolean, regulations: string[] }
+```
+
+**`decide()` must return one of four actions:**
+
+| Action | Interceptors | UI |
+|---|---|---|
+| `'consent'` | stay blocked until decision | full banner / modal |
+| `'notice'` | allow + replay queue (opt-out) | "Do Not Sell" link |
+| `'allow'` | allow + replay queue | nothing |
+| `'block'` | stay blocked | nothing (fail-closed) |
+
+Anything outside this set is clamped to `fallback`.
+
+### How it works (and the one caveat)
+
+Interceptors install **synchronously** on script eval, so trackers stay blocked
+no matter what. Geo resolves **asynchronously** — Zest holds the UI until the
+verdict lands, then mounts the right experience. On timeout or error it fails
+**closed** to `fallback` (default `'consent'`).
+
+Trade-off: in `allow` / `notice` regions, trackers are held for the brief
+gateway round-trip (~tens of ms) before being released. That's correct
+fail-closed behaviour — nothing leaks while the verdict is in flight.
+
+### Headless
+
+Headless renders no UI, so the result reaches you via the `onGeo` callback, the
+`zest:geo` event, or `await Zest.resolveGeo()`. Tracking is already accepted for
+`notice` / `allow` by the time it fires:
+
+```js
+import Zest from '@freshjuice/zest/headless';
+
+Zest.init({
+  geo: true,
+  callbacks: {
+    onGeo: (action, verdict) => {
+      if (action === 'consent') myBanner.show();        // GDPR — opt-in
+      if (action === 'notice')  myDoNotSellLink.show(); // US — opt-out
+      // 'allow' / 'block' — render nothing
+    }
+  }
+});
+
+// …or await it directly:
+const { action, verdict } = await Zest.resolveGeo();
+```
+
+> When `geo` is set, the `init()` snapshot returns `geoPending: true` until the
+> verdict resolves. Branch on that rather than reading `hasConsentDecision()`
+> immediately — it's still `false` while resolution is in flight.
+
 ## Blocking Modes
 
 Control how aggressively scripts are blocked:
@@ -265,6 +412,11 @@ document.addEventListener('zest:ready', (e) => {
   console.log('Zest initialized:', e.detail.consent);
 });
 
+// Fires only when `geo` is configured — see "Geolocation / jurisdiction gating"
+document.addEventListener('zest:geo', (e) => {
+  console.log('jurisdiction resolved:', e.detail.action, e.detail.verdict);
+});
+
 // Or via the helpers
 Zest.on(Zest.EVENTS.CHANGE, (e) => { /* ... */ });
 Zest.once(Zest.EVENTS.READY, (e) => { /* ... */ });
@@ -317,9 +469,9 @@ Built-in translations with auto-detection.
 
 | Bundle | Size (gzip) | Description |
 |--------|-------------|-------------|
-| `zest.min.js` | ~16 KB | All 12 languages, auto-detects |
-| `zest.{lang}.min.js` | ~9 KB | Single language (e.g. `zest.de.min.js`) |
-| `zest.headless.esm.min.js` | ~11 KB | Logic only, no UI / no translations (ESM import) |
+| `zest.min.js` | ~19 KB | All 12 languages, auto-detects |
+| `zest.{lang}.min.js` | ~14 KB | Single language (e.g. `zest.de.min.js`) |
+| `zest.headless.esm.min.js` | ~14 KB | Logic only, no UI / no translations (ESM import) |
 
 ```html
 <!-- Full bundle - auto-detects language -->
@@ -405,6 +557,21 @@ light DOM — you can position, hide, or z-index them from your global CSS.
 ### Want full CSS control?
 
 Use the **headless** entry and style your own markup however you like.
+
+## Branding
+
+By default a small **"Powered by Zest"** link (→ [cookiezest.com](https://cookiezest.com))
+appears on the banner and the settings modal. Turn it off with one flag:
+
+```javascript
+window.ZestConfig = { branding: false };
+```
+
+```html
+<script src="zest.min.js" data-branding="false"></script>
+```
+
+Headless builds render no UI, so this option doesn't apply there.
 
 ## Categories
 

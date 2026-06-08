@@ -9,7 +9,8 @@ export const EVENTS = {
   REJECT: 'zest:reject',
   CHANGE: 'zest:change',
   SHOW: 'zest:show',
-  HIDE: 'zest:hide'
+  HIDE: 'zest:hide',
+  GEO: 'zest:geo'
 };
 
 /**
@@ -66,6 +67,15 @@ export function emitShow(type = 'banner') {
  */
 export function emitHide(type = 'banner') {
   return emit(EVENTS.HIDE, { type });
+}
+
+/**
+ * Emit geo event (jurisdiction resolved). `action` is the chosen experience
+ * ('consent' | 'notice' | 'allow' | 'block'); `verdict` is the sanitized
+ * jurisdiction object, or null when resolution failed.
+ */
+export function emitGeo(action, verdict) {
+  return emit(EVENTS.GEO, { action, verdict });
 }
 
 /**

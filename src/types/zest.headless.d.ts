@@ -39,6 +39,51 @@ export interface InitSnapshot {
   consent: ConsentState;
   hasDecision: boolean;
   dntApplied: boolean;
+  /**
+   * True when geo gating is configured and resolution is still in flight.
+   * When `true`, wait for the `zest:geo` event / `onGeo` callback (or await
+   * {@link resolveGeo}) before deciding whether to show your banner — don't
+   * read `hasConsentDecision()` immediately, it's still `false`.
+   */
+  geoPending: boolean;
+}
+
+/**
+ * The experience a geo decision resolves to:
+ * - `'consent'` — opt-in: nothing accepted, present your full banner (GDPR).
+ * - `'notice'`  — opt-out: Zest accepted all; present a "Do Not Sell" link.
+ * - `'allow'`   — no applicable law: Zest accepted all; present nothing.
+ * - `'block'`   — keep everything blocked; present nothing (fail-closed).
+ *
+ * For `'notice'` / `'allow'`, Zest has already recorded acceptance and replayed
+ * the held queues before this fires.
+ */
+export type GeoAction = 'consent' | 'notice' | 'allow' | 'block';
+
+/**
+ * Sanitized jurisdiction verdict — the shape every geo source MUST return
+ * (the `/privacy` response of the zest-geo gateway).
+ */
+export interface GeoVerdict {
+  isEU: boolean;
+  isEEA: boolean;
+  isGDPR: boolean;
+  isCCPA: boolean;
+  isUSPrivacy: boolean;
+  regulations: string[];
+  country?: string;
+  regionCode?: string;
+  continent?: string;
+}
+
+/** Opt-in geo / jurisdiction gating. See the full build's docs for details. */
+export interface GeoConfig {
+  provider?: 'gateway';
+  endpoint?: string;
+  resolver?: () => GeoVerdict | Promise<GeoVerdict>;
+  decide?: (verdict: GeoVerdict) => GeoAction;
+  timeout?: number;
+  fallback?: GeoAction;
 }
 
 /** Tamper-evident proof of the user's last consent decision. */
@@ -68,6 +113,12 @@ export interface ZestCallbacks {
   onReject?: (consent: ConsentState) => void;
   onChange?: (consent: ConsentState) => void;
   onReady?: (consent: ConsentState) => void;
+  /**
+   * Fired once geo resolution completes with the chosen action and the
+   * sanitized verdict (`null` when resolution failed). The primary hook for
+   * headless geo gating — branch your UI on `action`.
+   */
+  onGeo?: (action: GeoAction, verdict: GeoVerdict | null) => void;
 }
 
 /**
@@ -102,6 +153,12 @@ export interface InitOptions {
   /** Disable individual interceptors. Default: all on. */
   intercept?: InterceptToggles;
   /**
+   * Opt-in geo / jurisdiction gating. Headless renders no UI, so the result
+   * is delivered via the `onGeo` callback / `zest:geo` event. Pass `true` as
+   * shorthand for the hosted gateway, or a {@link GeoConfig} for full control.
+   */
+  geo?: GeoConfig | true;
+  /**
    * Exact storage / cookie names to treat as strictly-necessary. Each
    * is appended to the essential category as a fully-anchored regex,
    * so the built-in essential patterns (zest_*, csrf*, …) stay intact.
@@ -132,6 +189,7 @@ export interface ZestEvents {
   CHANGE: 'zest:change';
   SHOW: 'zest:show';
   HIDE: 'zest:hide';
+  GEO: 'zest:geo';
 }
 
 export type ZestEventName = ZestEvents[keyof ZestEvents];
@@ -173,6 +231,13 @@ declare const Zest: {
   /** Wipe all consent state. Useful for "I changed my mind" flows. */
   reset(): void;
 
+  /**
+   * Manually resolve the visitor's jurisdiction. `init()` triggers this
+   * automatically when `geo` is configured; call it to await the result
+   * directly. Resolves `null` when geo is off or a decision already exists.
+   */
+  resolveGeo(): Promise<{ action: GeoAction; verdict: GeoVerdict | null } | null>;
+
   /** True if the browser is sending DNT or GPC. */
   isDoNotTrackEnabled(): boolean;
 
@@ -206,6 +271,7 @@ export const acceptAll: typeof Zest.acceptAll;
 export const rejectAll: typeof Zest.rejectAll;
 export const updateConsent: typeof Zest.updateConsent;
 export const reset: typeof Zest.reset;
+export const resolveGeo: typeof Zest.resolveGeo;
 export const getConsent: typeof Zest.getConsent;
 export const hasConsent: typeof Zest.hasConsent;
 export const hasConsentDecision: typeof Zest.hasConsentDecision;

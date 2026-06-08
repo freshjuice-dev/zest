@@ -43,6 +43,10 @@ function parseDataAttributes() {
   const showWidget = script.getAttribute('data-show-widget');
   if (showWidget !== null) config.showWidget = showWidget !== 'false';
 
+  // "Powered by Zest" attribution (default on)
+  const branding = script.getAttribute('data-branding');
+  if (branding !== null) config.branding = branding !== 'false';
+
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');
   if (autoInit !== null) config.autoInit = autoInit !== 'false';
@@ -57,6 +61,24 @@ function parseDataAttributes() {
 
   const consentModeMicrosoft = script.getAttribute('data-consent-mode-microsoft');
   if (consentModeMicrosoft !== null) config.consentModeMicrosoft = consentModeMicrosoft !== 'false';
+
+  // Geo gating. `data-geo="on"` (or "gateway"/"true") turns on jurisdiction
+  // detection via the hosted gateway. A custom endpoint / timeout / fallback
+  // can be supplied too. (decide()/resolver() are JS-only, never attributes.)
+  const geoAttr = script.getAttribute('data-geo');
+  if (geoAttr !== null) {
+    const geo = {};
+    if (geoAttr === '' || geoAttr === 'on' || geoAttr === 'true' || geoAttr === 'gateway') {
+      geo.provider = 'gateway';
+    }
+    const geoEndpoint = script.getAttribute('data-geo-endpoint');
+    if (geoEndpoint) geo.endpoint = geoEndpoint;
+    const geoTimeout = script.getAttribute('data-geo-timeout');
+    if (geoTimeout) geo.timeout = parseInt(geoTimeout, 10);
+    const geoFallback = script.getAttribute('data-geo-fallback');
+    if (geoFallback) geo.fallback = geoFallback;
+    config.geo = geo;
+  }
 
   return config;
 }

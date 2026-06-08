@@ -13,6 +13,7 @@ import {
   coreRejectAll,
   coreUpdateConsent,
   coreReset,
+  coreResolveGeo,
   isInitialized,
   getActiveConfig
 } from './core-lifecycle.js';
@@ -36,6 +37,7 @@ import { getConfig, getCurrentConfig } from './config/parser.js';
 import { showBanner, hideBanner, isBannerVisible } from './ui/banner.js';
 import { showModal, hideModal, isModalVisible } from './ui/modal.js';
 import { showWidget, hideWidget, removeWidget, isWidgetVisible } from './ui/widget.js';
+import { showNotice, hideNotice, removeNotice } from './ui/notice.js';
 
 /**
  * Handle accept all — delegates consent logic to core, handles UI swap.
@@ -154,6 +156,58 @@ function mountUI() {
 }
 
 /**
+ * Mount the opt-out "Do Not Sell" notice (geo action 'notice'). Consent was
+ * already accepted in core (opt-out model), so this only surfaces the opt-out
+ * affordance — it is not a consent gate. Guards body-readiness like mountUI.
+ */
+function mountNotice() {
+  if (uiMounted) return;
+
+  if (!document || !document.body) {
+    document.addEventListener('DOMContentLoaded', mountNotice, { once: true });
+    return;
+  }
+
+  uiMounted = true;
+  showNotice({
+    config: getActiveConfig(),
+    onOptOut: handleNoticeOptOut,
+    onDismiss: hideNotice
+  });
+  emitShow('notice');
+}
+
+/**
+ * Visitor clicked "Do Not Sell" — flip from the accepted opt-out default to a
+ * full reject, then drop the notice (optionally leaving the widget so they can
+ * revisit their choice).
+ */
+function handleNoticeOptOut() {
+  coreRejectAll();
+  hideNotice();
+
+  const config = getActiveConfig();
+  if (config?.showWidget) {
+    showWidget({ onClick: handleShowSettings });
+  }
+}
+
+/**
+ * Map a resolved geo action to the UI to present.
+ *   'consent' -> normal flow (banner, since no decision exists yet)
+ *   'notice'  -> opt-out "Do Not Sell" link
+ *   'allow'/'block' -> no UI (allow already released the queues in core)
+ */
+function mountUIForAction(action) {
+  if (action === 'notice') {
+    mountNotice();
+  } else if (action === 'consent') {
+    mountUI();
+  }
+  // 'allow' and 'block' intentionally render nothing.
+}
+
+/**
  * Initialize Zest with UI.
  *
  * Splits into two phases:
@@ -170,8 +224,21 @@ function mountUI() {
  *      after, mount happens immediately.
  */
 function init(userConfig = {}) {
-  coreInit(userConfig);
-  mountUI();
+  const snapshot = coreInit(userConfig);
+
+  if (snapshot.geoPending) {
+    // Geo gating is on and no decision exists yet. Hold the UI until the
+    // jurisdiction verdict lands, THEN mount the right experience. Interceptors
+    // installed synchronously inside coreInit(), so trackers stay blocked while
+    // we wait — and on timeout/failure coreResolveGeo() applies the configured
+    // fallback action (default 'consent', i.e. show the banner).
+    coreResolveGeo().then((res) => {
+      mountUIForAction(res ? res.action : 'consent');
+    });
+  } else {
+    mountUI();
+  }
+
   return Zest;
 }
 
@@ -245,6 +312,7 @@ const Zest = {
     coreReset();
     hideModal();
     removeWidget();
+    removeNotice();
     if (isInitialized()) {
       showBanner({
         onAcceptAll: handleAcceptAll,

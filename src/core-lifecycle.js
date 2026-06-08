@@ -17,6 +17,7 @@ import { setPatterns, appendPatternsToCategory } from './core/pattern-matcher.js
 import { getCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled } from './core/dnt.js';
 import { safeInvoke } from './core/security.js';
+import { resolveGeoAction } from './core/geo.js';
 
 import { applyConsentSignals } from './integrations/consent-signals.js';
 
@@ -31,7 +32,7 @@ import {
   resetConsent,
   hasConsentDecision
 } from './storage/consent-store.js';
-import { emitReady, emitConsent, emitReject, emitChange } from './storage/events.js';
+import { emitReady, emitConsent, emitReject, emitChange, emitGeo } from './storage/events.js';
 
 let initialized = false;
 let currentConfig = null;
@@ -62,7 +63,8 @@ export function coreInit(userConfig = {}) {
       config: currentConfig,
       consent: loadConsent(),
       hasDecision: hasConsentDecision(),
-      dntApplied: false
+      dntApplied: false,
+      geoPending: false
     };
   }
 
@@ -147,13 +149,51 @@ export function coreInit(userConfig = {}) {
   emitReady(consent);
   safeInvoke(currentConfig.callbacks?.onReady, consent);
 
+  // Geo gating is pending when it's configured AND no decision exists yet
+  // (a returning visitor, or one auto-rejected by DNT above, skips it — we
+  // never re-fetch a verdict once consent is recorded). The caller holds the
+  // UI and invokes coreResolveGeo() to drive the async decision; interceptors
+  // are already live, so nothing leaks while we wait.
+  const geoPending = !!currentConfig.geo && !hasConsentDecision();
+
   return {
     alreadyInitialized: false,
     config: currentConfig,
     consent,
     hasDecision: hasConsentDecision(),
-    dntApplied
+    dntApplied,
+    geoPending
   };
+}
+
+/**
+ * Resolve the visitor's jurisdiction and act on it. Safe to call only after
+ * coreInit(); a no-op (resolves null) when geo isn't configured or a consent
+ * decision already exists.
+ *
+ * Applies the consent side-effect for the chosen action:
+ *   'allow' / 'notice' -> accept all + replay the held queues (opt-out / no-law)
+ *   'consent' / 'block' -> leave everything blocked (UI layer, if any, decides)
+ *
+ * Then emits `zest:geo` and the onGeo callback. Always resolves (never
+ * rejects) to `{ action, verdict }` so UI callers can branch on the action.
+ */
+export async function coreResolveGeo() {
+  if (!initialized || !currentConfig?.geo) return null;
+  if (hasConsentDecision()) return null;
+
+  const { action, verdict } = await resolveGeoAction(currentConfig.geo);
+
+  // Re-check: a parallel user interaction (or DNT) may have recorded a
+  // decision while the verdict was in flight. If so, don't override it.
+  if (!hasConsentDecision() && (action === 'allow' || action === 'notice')) {
+    coreAcceptAll();
+  }
+
+  emitGeo(action, verdict);
+  safeInvoke(currentConfig.callbacks?.onGeo, action, verdict);
+
+  return { action, verdict };
 }
 
 /**

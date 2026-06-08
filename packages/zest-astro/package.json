@@ -1,0 +1,68 @@
+{
+  "name": "@freshjuice/zest-astro",
+  "version": "2.4.0",
+  "type": "module",
+  "description": "Astro integration for Zest cookie consent toolkit (GDPR/CCPA)",
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "astro-component",
+    "withastro",
+    "cookie",
+    "consent",
+    "gdpr",
+    "ccpa",
+    "privacy",
+    "cookie-consent",
+    "cookie-banner",
+    "zest"
+  ],
+  "author": {
+    "name": "FreshJuice",
+    "email": "contact@freshjuice.dev",
+    "url": "https://freshjuice.dev/"
+  },
+  "contributors": [
+    {
+      "name": "Alex Zappa",
+      "email": "alex@zappa.dev",
+      "url": "https://alex.zappa.dev/"
+    }
+  ],
+  "license": "MIT",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js",
+      "default": "./src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@freshjuice/zest": "^2.4.0",
+    "astro": "^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/freshjuice-dev/zest.git",
+    "directory": "packages/zest-astro"
+  },
+  "homepage": "https://zest.freshjuice.dev/",
+  "bugs": {
+    "url": "https://github.com/freshjuice-dev/zest/issues"
+  }
+}
