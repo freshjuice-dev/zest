@@ -18,11 +18,11 @@ A lightweight cookie consent toolkit for GDPR/CCPA compliance.
 ## Quick Start
 
 ```html
-<!-- unpkg -->
-<script src="https://unpkg.com/@freshjuice/zest"></script>
-
 <!-- jsdelivr -->
 <script src="https://cdn.jsdelivr.net/npm/@freshjuice/zest"></script>
+
+<!-- unpkg -->
+<script src="https://unpkg.com/@freshjuice/zest"></script>
 ```
 
 With configuration:
@@ -36,7 +36,7 @@ With configuration:
     policyUrl: '/privacy-policy'
   };
 </script>
-<script src="https://unpkg.com/@freshjuice/zest"></script>
+<script src="https://cdn.jsdelivr.net/npm/@freshjuice/zest"></script>
 ```
 
 As an npm dependency:
