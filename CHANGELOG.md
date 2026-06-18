@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1] - 2026-06-18
+
+### Fixed
+
+- **Removed `postinstall` script that broke consumer installs.** The
+  `node scripts/link-self.js` postinstall hook was a monorepo-internal
+  symlink tool that never shipped in the npm tarball (the `files` field
+  excludes `scripts/`). Every `npm install` of v2.4.0 failed with
+  `MODULE_NOT_FOUND`. The script is now removed — it was only needed
+  during local monorepo development, not for consumers.
+
 ## [2.4.0] - 2026-06-08
 
 ### Added
