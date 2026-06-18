@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MODULE_NOT_FOUND`. The script is now removed — it was only needed
   during local monorepo development, not for consumers.
 
+- **Replaced `link-self.js` with workspace-native resolution.** The
+  `zest-astro` and `zest-eleventy` plugins now declare `@freshjuice/zest`
+  as a `devDependency` with `"*"`, which npm workspaces resolve to the
+  local root package. This gives the plugins access to the Zest dist
+  files during local development without any postinstall hack. Both
+  plugins bumped to 2.4.1 with peer dep range updated to `^2.4.1`.
+
 ## [2.4.0] - 2026-06-08
 
 ### Added
