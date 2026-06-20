@@ -63,7 +63,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/freshjuice-dev/zest.git",
+    "url": "git+https://github.com/freshjuice-dev/zest.git",
     "directory": "packages/zest-eleventy"
   },
   "homepage": "https://cookiezest.com",
