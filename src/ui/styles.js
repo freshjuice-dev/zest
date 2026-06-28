@@ -433,7 +433,12 @@ export function generateStyles(config) {
 /* "Powered by Zest" attribution (banner + modal) */
 .zest-banner__powered {
   margin-top: 12px;
+  margin-bottom: -14px;
   text-align: center;
+}
+
+.zest-banner__powered .zest-powered-link {
+  font-size: 10px;
 }
 
 .zest-modal__powered {
