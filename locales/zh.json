@@ -13,7 +13,8 @@
       "description": "管理您的Cookie偏好设置。您可以在下方启用或禁用不同类型的Cookie。",
       "save": "保存设置",
       "acceptAll": "全部接受",
-      "rejectAll": "全部拒绝"
+      "rejectAll": "全部拒绝",
+      "policyText": "隐私政策"
     },
     "widget": {
       "label": "Cookie设置"

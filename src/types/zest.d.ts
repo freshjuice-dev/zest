@@ -191,11 +191,12 @@ export interface InitOptions {
   /** Show floating "manage cookies" widget after a decision. Default `true`. */
   showWidget?: boolean;
   /**
-   * Show the "Powered by Zest" attribution link on the banner and settings
-   * modal (links to https://cookiezest.com). Default `true`; set `false` to
-   * remove it.
+   * Show the "Powered by Zest" attribution link (links to
+   * https://cookiezest.com). Default `true` (shown on both the banner and
+   * the settings modal). Use `'modal'` or `'banner'` to restrict it to a
+   * single surface, or `false` to remove it everywhere.
    */
-  branding?: boolean;
+  branding?: boolean | 'modal' | 'banner';
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
   /** Script-blocking mode. Default `'safe'`. */

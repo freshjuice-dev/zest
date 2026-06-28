@@ -17,7 +17,8 @@ export const translations = {
               "description": "Manage your cookie preferences. You can enable or disable different types of cookies below.",
               "save": "Save Preferences",
               "acceptAll": "Accept All",
-              "rejectAll": "Reject All"
+              "rejectAll": "Reject All",
+              "policyText": "Privacy Policy"
           },
           "widget": {
               "label": "Cookie Settings"

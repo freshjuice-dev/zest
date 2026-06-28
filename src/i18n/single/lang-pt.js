@@ -17,7 +17,8 @@ export const translations = {
               "description": "Gerencie suas preferências de cookies. Você pode ativar ou desativar diferentes tipos de cookies abaixo.",
               "save": "Salvar preferências",
               "acceptAll": "Aceitar tudo",
-              "rejectAll": "Rejeitar tudo"
+              "rejectAll": "Rejeitar tudo",
+              "policyText": "Política de Privacidade"
           },
           "widget": {
               "label": "Configurações de cookies"

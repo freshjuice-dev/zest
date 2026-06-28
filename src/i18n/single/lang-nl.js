@@ -17,7 +17,8 @@ export const translations = {
               "description": "Beheer uw cookievoorkeuren. U kunt hieronder verschillende soorten cookies in- of uitschakelen.",
               "save": "Voorkeuren opslaan",
               "acceptAll": "Alles accepteren",
-              "rejectAll": "Alles weigeren"
+              "rejectAll": "Alles weigeren",
+              "policyText": "Privacybeleid"
           },
           "widget": {
               "label": "Cookie-instellingen"

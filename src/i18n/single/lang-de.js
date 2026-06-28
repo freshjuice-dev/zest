@@ -17,7 +17,8 @@ export const translations = {
               "description": "Verwalten Sie Ihre Cookie-Einstellungen. Sie können verschiedene Arten von Cookies unten aktivieren oder deaktivieren.",
               "save": "Einstellungen speichern",
               "acceptAll": "Alle akzeptieren",
-              "rejectAll": "Alle ablehnen"
+              "rejectAll": "Alle ablehnen",
+              "policyText": "Datenschutzerklärung"
           },
           "widget": {
               "label": "Cookie-Einstellungen"

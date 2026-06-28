@@ -35,7 +35,11 @@ export const DEFAULTS = {
       description: 'Manage your cookie preferences. You can enable or disable different types of cookies below.',
       save: 'Save Preferences',
       acceptAll: 'Accept All',
-      rejectAll: 'Reject All'
+      rejectAll: 'Reject All',
+      // Anchor text for the privacy-policy link rendered next to the modal
+      // description when `policyUrl` is set. Overridable per-language via
+      // translations and per-site via `labels.modal.policyText`.
+      policyText: 'Privacy Policy'
     },
     widget: {
       label: 'Cookie Settings'
@@ -52,8 +56,11 @@ export const DEFAULTS = {
   showWidget: true,
   expiration: 365,
 
-  // Show a small "Powered by Zest" attribution link at the bottom of the
-  // settings modal. Enabled by default; set to false to remove it.
+  // "Powered by Zest" attribution link (→ https://cookiezest.com).
+  //   true | 'modal' | 'banner' | false
+  // `true` (default) shows it on both the banner and the settings modal;
+  // `'modal'` / `'banner'` restrict it to one surface; `false` removes it
+  // everywhere. Normalised by normalizeBranding() in mergeConfig.
   branding: true,
 
   // Do Not Track / Global Privacy Control
@@ -137,6 +144,42 @@ export const DEFAULTS = {
 };
 
 /**
+ * Surfaces that can carry the "Powered by Zest" attribution.
+ */
+export const BRANDING_SURFACES = new Set(['banner', 'modal']);
+
+/**
+ * Normalise a `branding` config value into a canonical form:
+ *   true | false | 'modal' | 'banner'
+ *
+ * Accepts booleans and the strings `'modal'` / `'banner'` (case-insensitive)
+ * plus the usual on/off aliases. Unknown / unexpected values fall back to
+ * `true` (the default, fail-safe) so a typo never silently hides the
+ * attribution the project relies on.
+ */
+export function normalizeBranding(value) {
+  if (value === true || value === false) return value;
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase();
+    if (v === 'false' || v === 'off' || v === 'no' || v === '0') return false;
+    if (v === 'true' || v === 'on' || v === 'yes' || v === '1' || v === '') return true;
+    if (BRANDING_SURFACES.has(v)) return v;
+  }
+  return true;
+}
+
+/**
+ * Decide whether the attribution should render on a given surface, given
+ * the normalised `branding` value. `surface` must be `'banner'` or `'modal'`.
+ */
+export function shouldShowBranding(branding, surface) {
+  if (branding === false) return false;
+  if (branding === 'modal') return surface === 'modal';
+  if (branding === 'banner') return surface === 'banner';
+  return true; // true / unknown -> show everywhere (fail-safe)
+}
+
+/**
  * Validate and normalise the opt-in `geo` config block. Unknown / unsafe
  * values are dropped; `endpoint` must be an http(s) URL. Returns null when no
  * usable source is present.
@@ -184,11 +227,17 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'branding'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
     }
+  }
+
+  // Branding accepts true | false | 'modal' | 'banner' (plus on/off aliases).
+  // Normalise into a canonical value so the UI only ever sees the four forms.
+  if (userConfig.branding !== undefined) {
+    config.branding = normalizeBranding(userConfig.branding);
   }
 
   // Detect language and get translations

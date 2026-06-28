@@ -18,7 +18,8 @@ export const translations = {
         description: 'Manage your cookie preferences. You can enable or disable different types of cookies below.',
         save: 'Save Preferences',
         acceptAll: 'Accept All',
-        rejectAll: 'Reject All'
+        rejectAll: 'Reject All',
+        policyText: 'Privacy Policy'
       },
       widget: {
         label: 'Cookie Settings'
@@ -58,7 +59,8 @@ export const translations = {
         description: 'Verwalten Sie Ihre Cookie-Einstellungen. Sie können verschiedene Arten von Cookies unten aktivieren oder deaktivieren.',
         save: 'Einstellungen speichern',
         acceptAll: 'Alle akzeptieren',
-        rejectAll: 'Alle ablehnen'
+        rejectAll: 'Alle ablehnen',
+        policyText: 'Datenschutzerklärung'
       },
       widget: {
         label: 'Cookie-Einstellungen'
@@ -98,7 +100,8 @@ export const translations = {
         description: 'Gestiona tus preferencias de cookies. Puedes activar o desactivar diferentes tipos de cookies a continuación.',
         save: 'Guardar preferencias',
         acceptAll: 'Aceptar todo',
-        rejectAll: 'Rechazar todo'
+        rejectAll: 'Rechazar todo',
+        policyText: 'Política de privacidad'
       },
       widget: {
         label: 'Configuración de cookies'
@@ -138,7 +141,8 @@ export const translations = {
         description: 'Gérez vos préférences en matière de cookies. Vous pouvez activer ou désactiver différents types de cookies ci-dessous.',
         save: 'Enregistrer les préférences',
         acceptAll: 'Tout accepter',
-        rejectAll: 'Tout refuser'
+        rejectAll: 'Tout refuser',
+        policyText: 'Politique de confidentialité'
       },
       widget: {
         label: 'Paramètres des cookies'
@@ -178,7 +182,8 @@ export const translations = {
         description: 'Gestisci le tue preferenze sui cookie. Puoi attivare o disattivare diversi tipi di cookie qui sotto.',
         save: 'Salva preferenze',
         acceptAll: 'Accetta tutto',
-        rejectAll: 'Rifiuta tutto'
+        rejectAll: 'Rifiuta tutto',
+        policyText: 'Informativa sulla privacy'
       },
       widget: {
         label: 'Impostazioni cookie'
@@ -218,7 +223,8 @@ export const translations = {
         description: 'Gerencie suas preferências de cookies. Você pode ativar ou desativar diferentes tipos de cookies abaixo.',
         save: 'Salvar preferências',
         acceptAll: 'Aceitar tudo',
-        rejectAll: 'Rejeitar tudo'
+        rejectAll: 'Rejeitar tudo',
+        policyText: 'Política de Privacidade'
       },
       widget: {
         label: 'Configurações de cookies'
@@ -258,7 +264,8 @@ export const translations = {
         description: 'Beheer uw cookievoorkeuren. U kunt hieronder verschillende soorten cookies in- of uitschakelen.',
         save: 'Voorkeuren opslaan',
         acceptAll: 'Alles accepteren',
-        rejectAll: 'Alles weigeren'
+        rejectAll: 'Alles weigeren',
+        policyText: 'Privacybeleid'
       },
       widget: {
         label: 'Cookie-instellingen'
@@ -298,7 +305,8 @@ export const translations = {
         description: 'Zarządzaj swoimi preferencjami dotyczącymi plików cookie. Możesz włączyć lub wyłączyć różne typy plików cookie poniżej.',
         save: 'Zapisz preferencje',
         acceptAll: 'Zaakceptuj wszystko',
-        rejectAll: 'Odrzuć wszystko'
+        rejectAll: 'Odrzuć wszystko',
+        policyText: 'Polityka prywatności'
       },
       widget: {
         label: 'Ustawienia plików cookie'
@@ -338,7 +346,8 @@ export const translations = {
         description: 'Керуйте своїми налаштуваннями файлів cookie. Ви можете ввімкнути або вимкнути різні типи файлів cookie нижче.',
         save: 'Зберегти налаштування',
         acceptAll: 'Прийняти все',
-        rejectAll: 'Відхилити все'
+        rejectAll: 'Відхилити все',
+        policyText: 'Політика конфіденційності'
       },
       widget: {
         label: 'Налаштування cookie'
@@ -378,7 +387,8 @@ export const translations = {
         description: 'Управляйте своими настройками файлов cookie. Вы можете включить или отключить различные типы файлов cookie ниже.',
         save: 'Сохранить настройки',
         acceptAll: 'Принять все',
-        rejectAll: 'Отклонить все'
+        rejectAll: 'Отклонить все',
+        policyText: 'Политика конфиденциальности'
       },
       widget: {
         label: 'Настройки cookie'
@@ -418,7 +428,8 @@ export const translations = {
         description: 'Cookieの設定を管理できます。以下で各種Cookieを有効または無効にできます。',
         save: '設定を保存',
         acceptAll: 'すべて同意',
-        rejectAll: 'すべて拒否'
+        rejectAll: 'すべて拒否',
+        policyText: 'プライバシーポリシー'
       },
       widget: {
         label: 'Cookie設定'
@@ -458,7 +469,8 @@ export const translations = {
         description: '管理您的Cookie偏好设置。您可以在下方启用或禁用不同类型的Cookie。',
         save: '保存设置',
         acceptAll: '全部接受',
-        rejectAll: '全部拒绝'
+        rejectAll: '全部拒绝',
+        policyText: '隐私政策'
       },
       widget: {
         label: 'Cookie设置'

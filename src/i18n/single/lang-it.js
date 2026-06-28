@@ -17,7 +17,8 @@ export const translations = {
               "description": "Gestisci le tue preferenze sui cookie. Puoi attivare o disattivare diversi tipi di cookie qui sotto.",
               "save": "Salva preferenze",
               "acceptAll": "Accetta tutto",
-              "rejectAll": "Rifiuta tutto"
+              "rejectAll": "Rifiuta tutto",
+              "policyText": "Informativa sulla privacy"
           },
           "widget": {
               "label": "Impostazioni cookie"

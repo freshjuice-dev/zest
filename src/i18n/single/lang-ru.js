@@ -17,7 +17,8 @@ export const translations = {
               "description": "Управляйте своими настройками файлов cookie. Вы можете включить или отключить различные типы файлов cookie ниже.",
               "save": "Сохранить настройки",
               "acceptAll": "Принять все",
-              "rejectAll": "Отклонить все"
+              "rejectAll": "Отклонить все",
+              "policyText": "Политика конфиденциальности"
           },
           "widget": {
               "label": "Настройки cookie"

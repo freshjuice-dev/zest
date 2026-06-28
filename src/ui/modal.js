@@ -4,6 +4,7 @@
 
 import { generateStyles } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
+import { shouldShowBranding } from '../config/defaults.js';
 import { DEFAULT_CATEGORIES } from '../core/categories.js';
 import { escapeHTML, safeUrl } from '../core/security.js';
 
@@ -60,11 +61,12 @@ function createModalHTML(config, consent) {
 
   const validatedPolicyUrl = config.policyUrl ? safeUrl(config.policyUrl) : null;
   const policyLink = validatedPolicyUrl
-    ? `<a href="${escapeHTML(validatedPolicyUrl)}" class="zest-link" target="_blank" rel="noopener noreferrer">Privacy Policy</a>`
+    ? `<a href="${escapeHTML(validatedPolicyUrl)}" class="zest-link" target="_blank" rel="noopener noreferrer">${escapeHTML(labels.policyText || 'Privacy Policy')}</a>`
     : '';
 
-  // "Powered by Zest" attribution — on by default, removed when branding:false.
-  const branding = config.branding !== false
+  // "Powered by Zest" attribution. `branding` may be true | false | 'modal'
+  // | 'banner' — only render here when the modal surface is opted in.
+  const branding = shouldShowBranding(config.branding, 'modal')
     ? `<div class="zest-modal__powered">
           <a href="https://cookiezest.com" class="zest-powered-link" target="_blank" rel="noopener noreferrer">Powered by Zest</a>
         </div>`

@@ -104,7 +104,8 @@ window.ZestConfig = {
   // Show floating widget after consent
   showWidget: true,
 
-  // Show the "Powered by Zest" link on the banner & modal (default: true)
+  // Show the "Powered by Zest" link (default: true, both surfaces).
+  // Use 'modal' or 'banner' to show it on one surface only, or false to hide.
   branding: true,
 
   // Consent expiration in days
@@ -503,6 +504,12 @@ window.ZestConfig = {
   labels: {
     banner: {
       title: 'Custom German Title'
+    },
+    modal: {
+      // Anchor text for the privacy-policy link shown next to the modal
+      // description when `policyUrl` is set. Defaults to the per-language
+      // translation of "Privacy Policy".
+      policyText: 'Unsere Datenschutzerklärung'
     }
   }
 };
@@ -561,17 +568,26 @@ Use the **headless** entry and style your own markup however you like.
 ## Branding
 
 By default a small **"Powered by Zest"** link (→ [cookiezest.com](https://cookiezest.com))
-appears on the banner and the settings modal. Turn it off with one flag:
+appears on the banner and the settings modal. `branding` accepts four values:
+
+| Value | Banner | Modal |
+|-------|--------|-------|
+| `true` (default) | ✅ | ✅ |
+| `'modal'` | — | ✅ |
+| `'banner'` | ✅ | — |
+| `false` | — | — |
 
 ```javascript
-window.ZestConfig = { branding: false };
+// Show the attribution only on the settings modal, not the banner
+window.ZestConfig = { branding: 'modal' };
 ```
 
 ```html
-<script src="zest.min.js" data-branding="false"></script>
+<script src="zest.min.js" data-branding="modal"></script>
 ```
 
-Headless builds render no UI, so this option doesn't apply there.
+Turn it off entirely with `branding: false` / `data-branding="false"`. Headless
+builds render no UI, so this option doesn't apply there.
 
 ## Categories
 

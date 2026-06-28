@@ -13,7 +13,8 @@
       "description": "Cookieの設定を管理できます。以下で各種Cookieを有効または無効にできます。",
       "save": "設定を保存",
       "acceptAll": "すべて同意",
-      "rejectAll": "すべて拒否"
+      "rejectAll": "すべて拒否",
+      "policyText": "プライバシーポリシー"
     },
     "widget": {
       "label": "Cookie設定"

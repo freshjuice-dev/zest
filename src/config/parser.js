@@ -43,9 +43,11 @@ function parseDataAttributes() {
   const showWidget = script.getAttribute('data-show-widget');
   if (showWidget !== null) config.showWidget = showWidget !== 'false';
 
-  // "Powered by Zest" attribution (default on)
+  // "Powered by Zest" attribution. Accepts 'true'/'false'/'modal'/'banner'
+  // (plus on/off aliases). Passed through raw and normalised in mergeConfig
+  // so the canonical form (true | false | 'modal' | 'banner') reaches the UI.
   const branding = script.getAttribute('data-branding');
-  if (branding !== null) config.branding = branding !== 'false';
+  if (branding !== null) config.branding = branding;
 
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');

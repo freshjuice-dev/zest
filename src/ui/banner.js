@@ -4,6 +4,7 @@
 
 import { generateStyles } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
+import { shouldShowBranding } from '../config/defaults.js';
 import { escapeHTML } from '../core/security.js';
 
 let bannerElement = null;
@@ -19,8 +20,9 @@ function createBannerHTML(config) {
   const rawPosition = config.position || 'bottom';
   const position = SAFE_POSITIONS.has(rawPosition) ? rawPosition : 'bottom';
 
-  // "Powered by Zest" attribution — on by default, removed when branding:false.
-  const branding = config.branding !== false
+  // "Powered by Zest" attribution. `branding` may be true | false | 'modal'
+  // | 'banner' — only render here when the banner surface is opted in.
+  const branding = shouldShowBranding(config.branding, 'banner')
     ? `<div class="zest-banner__powered">
           <a href="https://cookiezest.com" class="zest-powered-link" target="_blank" rel="noopener noreferrer">Powered by Zest</a>
         </div>`
