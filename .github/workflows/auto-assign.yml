@@ -1,0 +1,36 @@
+name: Auto-assign
+
+# Automatically assign @reatlat to every newly opened issue and pull request,
+# so the maintainer is subscribed to all incoming work without manual triage.
+# Reopened items are covered too (a reopen is effectively a new open).
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  assign:
+    name: Assign reatlat
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Assign reatlat to the issue / PR
+        env:
+          # The workflow-scoped GITHUB_TOKEN is enough to add assignees on
+          # issues and same-repo PRs. (Fork PRs get a read-only token — see
+          # the note in the repo README / contributor docs.)
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT: ${{ github.event_name }}
+          NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+        run: |
+          if [ "$EVENT" = "pull_request" ]; then
+            gh pr edit "$NUMBER" --repo "${{ github.repository }}" --add-assignee reatlat
+          else
+            gh issue edit "$NUMBER" --repo "${{ github.repository }}" --add-assignee reatlat
+          fi
