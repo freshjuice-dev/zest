@@ -5,6 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.2] - 2026-06-28
+
+### Added
+
+- **Per-surface `branding` control.** The `branding` option now accepts
+  `'modal'` or `'banner'` in addition to `true` / `false`, so the
+  "Powered by Zest" attribution can be shown on one surface only.
+  `branding: 'modal'` keeps it on the settings modal and removes it from
+  the banner. `true` (default) and `false` are unchanged. Also accepted
+  via `data-branding="modal"` / `data-branding="banner"`.
+
+- **Customizable privacy-policy link text.** The modal's privacy-policy
+  link (rendered when `policyUrl` is set) no longer hard-codes the English
+  "Privacy Policy" string. The text is now a `labels.modal.policyText`
+  label with per-language translations for all 12 built-in languages;
+  override it via `labels.modal.policyText`.
+
+### Changed
+
+- **Banner "Powered by Zest" attribution tightened.** The banner credit
+  now renders at 10px and sits flush against the banner's bottom edge
+  (−14px bottom margin), so it reads as a subtle footer rather than a
+  floating line. The modal attribution is unchanged.
+
+- **`@freshjuice/zest-astro` now declares support for Astro 7.** The
+  peer dependency range is `^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0`.
+  No plugin code changes were needed — the `astro:config:setup` /
+  `injectScript('head-inline', …)` integration API is unchanged in
+  Astro 7. Bumped to 2.4.2.
+
 ## [2.4.1] - 2026-06-18
 
 ### Fixed
