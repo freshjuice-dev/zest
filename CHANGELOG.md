@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-06-29
+
+### Added
+
+- **`buttonStyle` config option.** New `buttonStyle: 'fill' | 'outline'`
+  option (default `'fill'`) controls how the banner and settings-modal
+  Accept / Reject buttons render. `'fill'` keeps the current solid,
+  equal-prominence look; `'outline'` renders accent-bordered transparent
+  buttons for a lighter visual weight. Also accepted via the
+  `data-button-style="outline"` script attribute. Unknown values fall
+  back to `'fill'` (normalised in `mergeConfig`).
+
 ## [2.4.2] - 2026-06-28
 
 ### Added
