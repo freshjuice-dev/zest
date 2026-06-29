@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1] - 2026-06-29
+
+### Changed
+
+- **Equal-weight action buttons.** The modal's "Reject All" button no
+  longer renders as a low-weight ghost link, and the modal's "Accept All"
+  and the banner's "Reject All" no longer render in the de-emphasised
+  secondary style. All action buttons — Accept, Reject, Save — are now
+  primary buttons of equal prominence; the `zest-btn--secondary` tier is
+  removed entirely. The `buttonStyle` config (`'fill'` | `'outline'`)
+  controls how every primary button renders. "Settings" remains a
+  low-weight `zest-btn--ghost` tertiary link.
+
+- **`@freshjuice/zest-astro` and `@freshjuice/zest-eleventy` bumped to
+  2.5.1** (lockstep with the root package). Peer dependency range now
+  `@freshjuice/zest: ^2.5.1`. No plugin code changes — the plugins inject
+  the Zest IIFE unchanged; the button-style change is a full-build-only
+  UI concern and does not affect plugin output.
+
 ## [2.5.0] - 2026-06-29
 
 ### Added
