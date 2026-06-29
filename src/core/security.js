@@ -190,9 +190,8 @@ export function sanitizeCustomStyles(css) {
     return 'url(#)';
   });
 
-  // Block selectors that target the built-in reject button, which could
-  // be used to hide it for clickjacking consent bypass.
-  out = out.replace(/\.zest-btn--secondary\s*\{[^}]*\}/gi, '');
+  // Block selectors that target the built-in reject/accept buttons, which
+  // could be used to hide them for clickjacking consent bypass.
   out = out.replace(/\[data-action\s*=\s*["']reject-all["']\]\s*\{[^}]*\}/gi, '');
   out = out.replace(/\[data-action\s*=\s*["']accept-all["']\]\s*\{[^}]*\}/gi, '');
 

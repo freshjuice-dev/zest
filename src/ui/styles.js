@@ -189,23 +189,41 @@ export function generateStyles(config) {
   outline-offset: 2px;
 }
 
+${config.buttonStyle === 'outline' ? `
+.zest-btn--primary {
+  background: transparent;
+  color: var(--zest-accent);
+  border: 2px solid var(--zest-accent);
+}
+.zest-btn--primary:hover {
+  background: var(--zest-bg-secondary);
+}
+.zest-btn--secondary {
+  background: transparent;
+  color: var(--zest-text);
+  border: 2px solid var(--zest-border);
+}
+.zest-btn--secondary:hover {
+  background: var(--zest-bg-secondary);
+}
+` : `
 .zest-btn--primary {
   background: var(--zest-accent);
   color: #ffffff;
+  border: 1px solid var(--zest-accent);
 }
-
 .zest-btn--primary:hover {
   background: var(--zest-accent-hover);
 }
-
 .zest-btn--secondary {
   background: var(--zest-bg-secondary);
   color: var(--zest-text);
+  border: 1px solid var(--zest-border);
 }
-
 .zest-btn--secondary:hover {
   background: var(--zest-border);
 }
+`}
 
 .zest-btn--ghost {
   background: transparent;

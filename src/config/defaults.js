@@ -72,6 +72,11 @@ export const DEFAULTS = {
   respectDNT: true,
   dntBehavior: 'reject',
 
+  // Button style for both Accept and Reject buttons:
+  //   'fill'    — solid, equal visual weight (default, equal prominence)
+  //   'outline' — accent-colored border, transparent background
+  buttonStyle: 'fill',
+
   // Custom styles to inject into Shadow DOM
   customStyles: '',
 
@@ -227,7 +232,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'buttonStyle'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
