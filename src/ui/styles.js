@@ -198,14 +198,6 @@ ${config.buttonStyle === 'outline' ? `
 .zest-btn--primary:hover {
   background: var(--zest-bg-secondary);
 }
-.zest-btn--secondary {
-  background: transparent;
-  color: var(--zest-text);
-  border: 2px solid var(--zest-border);
-}
-.zest-btn--secondary:hover {
-  background: var(--zest-bg-secondary);
-}
 ` : `
 .zest-btn--primary {
   background: var(--zest-accent);
@@ -214,14 +206,6 @@ ${config.buttonStyle === 'outline' ? `
 }
 .zest-btn--primary:hover {
   background: var(--zest-accent-hover);
-}
-.zest-btn--secondary {
-  background: var(--zest-bg-secondary);
-  color: var(--zest-text);
-  border: 1px solid var(--zest-border);
-}
-.zest-btn--secondary:hover {
-  background: var(--zest-border);
 }
 `}
 

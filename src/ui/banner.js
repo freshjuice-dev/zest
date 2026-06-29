@@ -36,7 +36,7 @@ function createBannerHTML(config) {
         <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
           ${escapeHTML(labels.acceptAll)}
         </button>
-        <button type="button" class="zest-btn zest-btn--secondary" data-action="reject-all">
+        <button type="button" class="zest-btn zest-btn--primary" data-action="reject-all">
           ${escapeHTML(labels.rejectAll)}
         </button>
         <button type="button" class="zest-btn zest-btn--ghost" data-action="settings">

@@ -86,10 +86,10 @@ function createModalHTML(config, consent) {
           <button type="button" class="zest-btn zest-btn--primary" data-action="save">
             ${escapeHTML(labels.save)}
           </button>
-          <button type="button" class="zest-btn zest-btn--secondary" data-action="accept-all">
+          <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
             ${escapeHTML(labels.acceptAll)}
           </button>
-          <button type="button" class="zest-btn zest-btn--ghost" data-action="reject-all">
+          <button type="button" class="zest-btn zest-btn--primary" data-action="reject-all">
             ${escapeHTML(labels.rejectAll)}
           </button>
         </div>
