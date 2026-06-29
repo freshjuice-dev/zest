@@ -185,6 +185,24 @@ export function shouldShowBranding(branding, surface) {
 }
 
 /**
+ * Normalise a `buttonStyle` config value into a canonical form:
+ *   'fill' | 'outline'
+ *
+ * Accepts the strings `'fill'` / `'outline'` (case-insensitive). Anything
+ * else (unknown string, number, etc.) falls back to `'fill'` — the default,
+ * fail-safe rendering — so a typo can never silently switch the buttons to
+ * the outlined variant.
+ */
+export function normalizeButtonStyle(value) {
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase();
+    if (v === 'outline') return 'outline';
+    if (v === 'fill') return 'fill';
+  }
+  return 'fill';
+}
+
+/**
  * Validate and normalise the opt-in `geo` config block. Unknown / unsafe
  * values are dropped; `endpoint` must be an http(s) URL. Returns null when no
  * usable source is present.
@@ -232,7 +250,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'buttonStyle'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
@@ -243,6 +261,13 @@ export function mergeConfig(userConfig) {
   // Normalise into a canonical value so the UI only ever sees the four forms.
   if (userConfig.branding !== undefined) {
     config.branding = normalizeBranding(userConfig.branding);
+  }
+
+  // Button style: 'fill' (default, solid) or 'outline' (bordered, transparent).
+  // Normalised so a typo or wrong case never silently falls through to the
+  // outline branch in styles.js — unknown values stay on the safe 'fill' default.
+  if (userConfig.buttonStyle !== undefined) {
+    config.buttonStyle = normalizeButtonStyle(userConfig.buttonStyle);
   }
 
   // Detect language and get translations

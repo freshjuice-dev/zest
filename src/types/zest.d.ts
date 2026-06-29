@@ -197,6 +197,13 @@ export interface InitOptions {
    * single surface, or `false` to remove it everywhere.
    */
   branding?: boolean | 'modal' | 'banner';
+  /**
+   * Style of the Accept / Reject buttons. `'fill'` (default) renders solid
+   * buttons of equal prominence; `'outline'` renders accent-bordered
+   * transparent buttons for a lighter visual weight. Unknown values fall
+   * back to `'fill'`. Also accepted via `data-button-style`.
+   */
+  buttonStyle?: 'fill' | 'outline';
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
   /** Script-blocking mode. Default `'safe'`. */

@@ -108,6 +108,9 @@ window.ZestConfig = {
   // Use 'modal' or 'banner' to show it on one surface only, or false to hide.
   branding: true,
 
+  // Button style: 'fill' (solid, default) or 'outline' (bordered, transparent)
+  buttonStyle: 'fill',
+
   // Consent expiration in days
   expiration: 365,
 

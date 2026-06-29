@@ -49,6 +49,11 @@ function parseDataAttributes() {
   const branding = script.getAttribute('data-branding');
   if (branding !== null) config.branding = branding;
 
+  // Button style: 'fill' (default, solid) or 'outline' (bordered, transparent).
+  // Passed through raw and normalised in mergeConfig.
+  const buttonStyle = script.getAttribute('data-button-style');
+  if (buttonStyle !== null) config.buttonStyle = buttonStyle;
+
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');
   if (autoInit !== null) config.autoInit = autoInit !== 'false';
