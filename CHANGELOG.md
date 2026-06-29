@@ -17,6 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `data-button-style="outline"` script attribute. Unknown values fall
   back to `'fill'` (normalised in `mergeConfig`).
 
+### Changed
+
+- **`@freshjuice/zest-astro` and `@freshjuice/zest-eleventy` bumped to
+  2.5.0** (lockstep with the root package). Their peer dependency range is
+  now `@freshjuice/zest: ^2.5.0`. No plugin code changes — the plugins
+  inject the Zest IIFE unchanged; `buttonStyle` is a full-build-only UI
+  concern and does not affect plugin output.
+
 ## [2.4.2] - 2026-06-28
 
 ### Added
