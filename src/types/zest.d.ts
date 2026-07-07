@@ -173,6 +173,24 @@ export interface InterceptToggles {
   network?: boolean;
 }
 
+/** Per-category configuration overrides. */
+export interface CategoryConfig {
+  /** Display label (defaults to the built-in label for this category). */
+  label?: string;
+  /** Description shown under the label in the settings modal. */
+  description?: string;
+  /** Whether the category is required (always on, toggle disabled). */
+  required?: boolean;
+  /** Default consent state when no decision exists yet. */
+  default?: boolean;
+  /**
+   * Hide this category from the settings modal. Hidden categories are
+   * forced to false (rejected) in the consent state. Essential cannot
+   * be hidden — the flag is ignored for it.
+   */
+  hidden?: boolean;
+}
+
 /** Configuration accepted by `init()` and `window.ZestConfig`. */
 export interface InitOptions {
   /** Display language. `'auto'` detects from `<html lang>` / browser. */
@@ -216,6 +234,13 @@ export interface InitOptions {
   dntBehavior?: DNTBehavior;
   /** Disable individual interceptors. Default: all on. */
   intercept?: InterceptToggles;
+  /**
+   * Per-category overrides. Set `hidden: true` to remove a category from
+   * the settings modal. Hidden categories are forced to false (rejected)
+   * in the consent state — a visitor can never accept a toggle they cannot
+   * see. Essential cannot be hidden.
+   */
+  categories?: Partial<Record<ConsentCategory, CategoryConfig>>;
   /**
    * Opt-in geo / jurisdiction gating. Omit to show the banner to everyone
    * (the default). Pass `true` as shorthand for the hosted gateway

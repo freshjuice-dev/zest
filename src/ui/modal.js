@@ -5,7 +5,7 @@
 import { generateStyles } from './styles.js';
 import { getCurrentConfig } from '../config/parser.js';
 import { shouldShowBranding } from '../config/defaults.js';
-import { DEFAULT_CATEGORIES } from '../core/categories.js';
+import { DEFAULT_CATEGORIES, getHiddenCategoryIds } from '../core/categories.js';
 import { escapeHTML, safeUrl } from '../core/security.js';
 
 let modalElement = null;
@@ -50,8 +50,10 @@ function createCategoryHTML(category, isChecked, isRequired) {
 function createModalHTML(config, consent) {
   const labels = config.labels.modal;
   const categories = config.categories || DEFAULT_CATEGORIES;
+  const hiddenIds = getHiddenCategoryIds(categories);
 
   const categoriesHTML = Object.values(categories)
+    .filter(cat => !hiddenIds.includes(cat.id))
     .map(cat => createCategoryHTML(
       cat,
       consent[cat.id] ?? cat.default,
@@ -104,6 +106,9 @@ function createModalHTML(config, consent) {
  */
 function getSelections() {
   if (!shadowRoot) return currentSelections;
+  const config = getCurrentConfig();
+  const categories = config.categories || DEFAULT_CATEGORIES;
+  const hiddenIds = getHiddenCategoryIds(categories);
 
   const toggles = shadowRoot.querySelectorAll('.zest-toggle__input');
   const selections = { essential: true };
@@ -114,6 +119,13 @@ function getSelections() {
       selections[category] = toggle.checked;
     }
   });
+
+  // Hidden categories are never rendered, so they never appear in the
+  // toggle list. Explicitly set them to false so updateConsent receives
+  // a complete consent object.
+  for (const id of hiddenIds) {
+    selections[id] = false;
+  }
 
   return selections;
 }

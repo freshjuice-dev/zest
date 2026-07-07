@@ -87,6 +87,21 @@ function parseDataAttributes() {
     config.geo = geo;
   }
 
+  // Hide consent categories from the settings modal.
+  // data-hide-categories="analytics" or data-hide-categories="analytics,marketing"
+  // Hidden categories are forced to false (rejected) — a visitor must never
+  // accept a toggle they cannot see. Essential is always visible.
+  const hideAttr = script.getAttribute('data-hide-categories');
+  if (hideAttr) {
+    const ids = hideAttr.split(',').map(s => s.trim()).filter(Boolean);
+    if (ids.length > 0) {
+      config.categories = {};
+      for (const id of ids) {
+        config.categories[id] = { hidden: true };
+      }
+    }
+  }
+
   return config;
 }
 
@@ -108,11 +123,24 @@ export function getConfig() {
   const windowConfig = parseWindowConfig();
   const dataConfig = parseDataAttributes();
 
-  // Merge: defaults < windowConfig < dataConfig
-  return mergeConfig({
-    ...windowConfig,
-    ...dataConfig
-  });
+  // Shallow spread, but deep-merge `categories` so window.ZestConfig
+  // category overrides (label, description, …) are not clobbered by
+  // data-hide-categories which sets { hidden: true } per category.
+  const merged = { ...windowConfig, ...dataConfig };
+  if (windowConfig.categories && dataConfig.categories) {
+    merged.categories = {};
+    for (const key of Object.keys(windowConfig.categories)) {
+      merged.categories[key] = { ...windowConfig.categories[key] };
+    }
+    for (const key of Object.keys(dataConfig.categories)) {
+      merged.categories[key] = {
+        ...merged.categories[key],
+        ...dataConfig.categories[key]
+      };
+    }
+  }
+
+  return mergeConfig(merged);
 }
 
 /**

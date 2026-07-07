@@ -126,6 +126,14 @@ window.ZestConfig = {
     onChange: (consent) => {},
     onReady: (consent) => {},
     onGeo: (action, verdict) => {}   // fires when `geo` is configured
+  },
+
+  // Hide consent categories from the settings modal. Hidden categories
+  // are forced to false (rejected) — a visitor can never accept a toggle
+  // they cannot see. Essential cannot be hidden.
+  categories: {
+    analytics: { hidden: true },
+    functional: { hidden: true }
   }
 };
 ```
@@ -141,11 +149,16 @@ window.ZestConfig = {
   data-policy-url="/privacy"
   data-geo="on"
   data-branding="false"
+  data-hide-categories="analytics,functional"
 ></script>
 ```
 
 > `data-geo="on"` enables the hosted gateway. The `resolver` / `decide`
 > callbacks are JavaScript-only — use `window.ZestConfig.geo` for those.
+
+> `data-hide-categories` accepts a comma-separated list of category IDs
+> to hide from the settings modal (`analytics`, `functional`, `marketing`).
+> Hidden categories are forced to false (rejected). Essential cannot be hidden.
 
 ## API
 
