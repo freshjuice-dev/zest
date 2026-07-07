@@ -7,7 +7,7 @@
 
 A lightweight cookie consent toolkit for GDPR/CCPA compliance.
 
-- **Lightweight** — ~14KB gzipped (single language) / ~19KB (all 12 languages) / ~14KB (headless)
+- **Lightweight** — ~16KB gzipped (single language) / ~22KB (all 12 languages) / ~14KB (headless)
 - **Zero dependencies** — Vanilla JavaScript
 - **Shadow DOM** — Styles isolated from your site
 - **Headless mode** — Bring your own UI & CSS, use only the consent engine
@@ -51,8 +51,8 @@ Zest.init({ mode: 'safe', policyUrl: '/privacy' });
 
 | Entry | What you get | Min / Gzip |
 |---|---|---|
-| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~62 KB / **~19 KB** |
-| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~40 KB / **~14 KB** |
+| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~73 KB / **~22 KB** |
+| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~42 KB / **~14 KB** |
 
 Use **headless** when you want full control over markup and styling.
 
@@ -509,8 +509,8 @@ Built-in translations with auto-detection.
 
 | Bundle | Size (gzip) | Description |
 |--------|-------------|-------------|
-| `zest.min.js` | ~19 KB | All 12 languages, auto-detects |
-| `zest.{lang}.min.js` | ~14 KB | Single language (e.g. `zest.de.min.js`) |
+| `zest.min.js` | ~22 KB | All 12 languages, auto-detects |
+| `zest.{lang}.min.js` | ~16 KB | Single language (e.g. `zest.de.min.js`) |
 | `zest.headless.esm.min.js` | ~14 KB | Logic only, no UI / no translations (ESM import) |
 
 ```html
