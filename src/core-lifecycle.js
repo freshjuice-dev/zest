@@ -14,7 +14,7 @@ import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScrip
 import { interceptNetwork, setConsentChecker as setNetworkChecker } from './core/network-interceptor.js';
 import { interceptElements, setConsentChecker as setElementChecker, replayElements } from './core/element-interceptor.js';
 import { setPatterns, appendPatternsToCategory } from './core/pattern-matcher.js';
-import { getCategoryIds } from './core/categories.js';
+import { getCategoryIds, getHiddenCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled } from './core/dnt.js';
 import { safeInvoke } from './core/security.js';
 import { resolveGeoAction } from './core/geo.js';
@@ -30,7 +30,8 @@ import {
   acceptAll as storeAcceptAll,
   rejectAll as storeRejectAll,
   resetConsent,
-  hasConsentDecision
+  hasConsentDecision,
+  setHiddenCategoryIds
 } from './storage/consent-store.js';
 import { emitReady, emitConsent, emitReject, emitChange, emitGeo } from './storage/events.js';
 
@@ -69,6 +70,11 @@ export function coreInit(userConfig = {}) {
   }
 
   currentConfig = setConfig(userConfig);
+
+  // Propagate hidden category IDs to the consent store so every consent
+  // write (load, update, acceptAll) forces them to false. A visitor must
+  // never end up "accepted" for a toggle they cannot see.
+  setHiddenCategoryIds(getHiddenCategoryIds(currentConfig.categories));
 
   // Push default-denied state to vendor consent mode APIs BEFORE any
   // third-party script has a chance to fire.
@@ -241,7 +247,7 @@ export function coreUpdateConsent(selections) {
     replayAll(newlyAllowed);
   }
 
-  const hasNonEssential = Object.entries(selections || {}).some(
+  const hasNonEssential = Object.entries(result.current).some(
     ([cat, val]) => cat !== 'essential' && val
   );
   if (hasNonEssential) {

@@ -26,6 +26,32 @@ function secureAttribute() {
 // Current consent state
 let consent = null;
 
+// Category IDs that are hidden from the modal. Set by coreInit from the
+// merged config. Hidden categories are always forced to false — a visitor
+// must never end up "accepted" for a toggle they cannot see.
+let hiddenCategoryIds = [];
+
+/**
+ * Set which category IDs are hidden. Called once during coreInit after
+ * the config is merged. Essential should never appear here (categories.js
+ * filters it out), but we guard against it defensively.
+ */
+export function setHiddenCategoryIds(ids) {
+  hiddenCategoryIds = (Array.isArray(ids) ? ids : []).filter(
+    (id) => id !== 'essential'
+  );
+}
+
+/**
+ * Force every hidden category to false in a consent object.
+ */
+function applyHiddenOverride(state) {
+  for (const id of hiddenCategoryIds) {
+    state[id] = false;
+  }
+  return state;
+}
+
 /**
  * Get the original cookie setter (bypasses interception)
  */
@@ -67,7 +93,7 @@ export function loadConsent() {
       const raw = JSON.parse(decodeURIComponent(match[1]));
       const clean = sanitizeConsentPayload(raw, getCategoryIds());
       if (clean && clean.categories) {
-        consent = { ...getDefaultConsent(), ...clean.categories };
+        consent = applyHiddenOverride({ ...getDefaultConsent(), ...clean.categories });
         return { ...consent };
       }
     }
@@ -75,7 +101,7 @@ export function loadConsent() {
     // Invalid or missing cookie
   }
 
-  consent = getDefaultConsent();
+  consent = applyHiddenOverride(getDefaultConsent());
   return { ...consent };
 }
 
@@ -84,7 +110,7 @@ export function loadConsent() {
  */
 export function saveConsent(expirationDays = 365) {
   if (!consent) {
-    consent = getDefaultConsent();
+    consent = applyHiddenOverride(getDefaultConsent());
   }
 
   const data = {
@@ -113,7 +139,7 @@ export function getConsent() {
  * Update consent state
  */
 export function updateConsent(newConsent, expirationDays = 365) {
-  const previous = consent ? { ...consent } : getDefaultConsent();
+  const previous = consent ? { ...consent } : applyHiddenOverride(getDefaultConsent());
 
   consent = {
     essential: true, // Always true
@@ -121,6 +147,7 @@ export function updateConsent(newConsent, expirationDays = 365) {
     analytics: !!newConsent.analytics,
     marketing: !!newConsent.marketing
   };
+  applyHiddenOverride(consent);
 
   saveConsent(expirationDays);
 

@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Per-category `hidden` flag.** Set `categories.analytics.hidden: true`
+  (or `categories.functional`, `categories.marketing`) to remove a consent
+  category from the settings modal. Hidden categories are forced to `false`
+  (rejected) in the consent state — a visitor can never accept a toggle they
+  cannot see. Essential cannot be hidden; the flag is ignored for it. Also
+  accepted via the `data-hide-categories="analytics,marketing"` script
+  attribute (comma-separated list of category IDs). Closes [#5].
+
+[#5]: https://github.com/freshjuice-dev/zest/issues/5
+
 ## [2.5.1] - 2026-06-29
 
 ### Changed

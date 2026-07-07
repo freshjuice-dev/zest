@@ -327,6 +327,11 @@
         },
         "default": {
           "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean",
+          "default": false,
+          "description": "Hide this category from the settings modal. Essential cannot be hidden. Hidden categories are forced to false (rejected) in the consent state — there is no way for a visitor to accept a category they cannot see."
         }
       }
     }
