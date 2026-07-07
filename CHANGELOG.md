@@ -17,6 +17,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   accepted via the `data-hide-categories="analytics,marketing"` script
   attribute (comma-separated list of category IDs). Closes [#5].
 
+### Changed
+
+- **Dynamic button text color via `--zest-accent-text`.** Primary (fill)
+  buttons no longer hardcode `#ffffff` as their text color. The new
+  `--zest-accent-text` custom property uses the CSS `contrast-color()`
+  function (Baseline since April 2026 — Chrome 147+, Safari 26+,
+  Firefox 146+) to let the browser pick black or white text based on the
+  accent color. On older browsers, a JS-computed WCAG luminance fallback
+  ensures readable text everywhere. Light accent colors (yellow, light
+  blue) get dark text automatically; dark accent colors keep white.
+  Override it to force a specific text color.
+
 [#5]: https://github.com/freshjuice-dev/zest/issues/5
 
 ## [2.5.1] - 2026-06-29

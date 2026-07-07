@@ -19,6 +19,7 @@ export function generateStyles(config) {
 :host {
   --zest-accent: ${accentColor};
   --zest-accent-hover: ${adjustColor(accentColor, -15)};
+  --zest-accent-text: ${contrastColor(accentColor)};
   --zest-bg: #ffffff;
   --zest-bg-secondary: #f3f4f6;
   --zest-text: #1f2937;
@@ -53,6 +54,14 @@ export function generateStyles(config) {
     --zest-text-secondary: #9ca3af;
     --zest-border: #4b5563;
     --zest-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Native contrast-color() when supported (Baseline April 2026) — more
+   accurate than our JS fallback, handles all CSS color spaces. */
+@supports (color: contrast-color(red)) {
+  :host {
+    --zest-accent-text: contrast-color(var(--zest-accent));
   }
 }
 
@@ -201,7 +210,7 @@ ${config.buttonStyle === 'outline' ? `
 ` : `
 .zest-btn--primary {
   background: var(--zest-accent);
-  color: #ffffff;
+  color: var(--zest-accent-text);
   border: 1px solid var(--zest-accent);
 }
 .zest-btn--primary:hover {
@@ -516,6 +525,32 @@ ${config.buttonStyle === 'outline' ? `
 }
 ${customCss}
 `;
+}
+
+/**
+ * JS fallback for --zest-accent-text on browsers without CSS contrast-color()
+ * (pre-April 2026 Baseline). Uses WCAG 2.x relative luminance to pick black
+ * or white. Browsers that support contrast-color() override this via @supports.
+ */
+function contrastColor(hex) {
+  if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{3,8}$/.test(hex.trim())) {
+    return '#ffffff';
+  }
+  let clean = hex.trim().replace('#', '');
+  if (clean.length === 3) {
+    clean = clean.split('').map(c => c + c).join('');
+  }
+  if (clean.length === 8) clean = clean.slice(0, 6);
+  if (clean.length !== 6) return '#ffffff';
+
+  const r = parseInt(clean.slice(0, 2), 16) / 255;
+  const g = parseInt(clean.slice(2, 4), 16) / 255;
+  const b = parseInt(clean.slice(4, 6), 16) / 255;
+
+  const lin = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+
+  return L > 0.179 ? '#1f2937' : '#ffffff';
 }
 
 /**

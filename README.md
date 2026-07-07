@@ -545,6 +545,7 @@ The following custom properties are exposed on the host elements:
 ```css
 zest-banner, zest-modal, zest-widget {
   --zest-accent: #0071e3;
+  --zest-accent-text: contrast-color(var(--zest-accent));
   --zest-bg: #ffffff;
   --zest-bg-secondary: #f3f4f6;
   --zest-text: #1f2937;
@@ -554,6 +555,14 @@ zest-banner, zest-modal, zest-widget {
   --zest-radius-sm: 8px;
 }
 ```
+
+`--zest-accent-text` uses the CSS `contrast-color()` function
+(Baseline since April 2026 — Chrome 147+, Safari 26+, Firefox 146+)
+to let the browser pick black or white text based on the accent color.
+On older browsers, Zest falls back to a JS-computed WCAG luminance
+value. Light accent colors (yellow, light blue) get dark text
+automatically; dark accent colors keep white. Override it to force a
+specific text color on primary buttons.
 
 ### 2. `customStyles` config option
 
