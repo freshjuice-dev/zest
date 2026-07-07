@@ -111,6 +111,9 @@ window.ZestConfig = {
   // Button style: 'fill' (solid, default) or 'outline' (bordered, transparent)
   buttonStyle: 'fill',
 
+  // Blur the page content behind the settings modal overlay. Default: false.
+  backdropBlur: false,
+
   // Consent expiration in days
   expiration: 365,
 
@@ -150,6 +153,7 @@ window.ZestConfig = {
   data-geo="on"
   data-branding="false"
   data-hide-categories="analytics,functional"
+  data-backdrop-blur="on"
 ></script>
 ```
 
@@ -159,6 +163,8 @@ window.ZestConfig = {
 > `data-hide-categories` accepts a comma-separated list of category IDs
 > to hide from the settings modal (`analytics`, `functional`, `marketing`).
 > Hidden categories are forced to false (rejected). Essential cannot be hidden.
+
+> `data-backdrop-blur="on"` blurs the page content behind the settings modal.
 
 ## API
 

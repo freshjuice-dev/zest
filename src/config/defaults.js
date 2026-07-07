@@ -77,6 +77,11 @@ export const DEFAULTS = {
   //   'outline' — accent-colored border, transparent background
   buttonStyle: 'fill',
 
+  // Blur the page content behind the settings modal overlay.
+  // Off by default — it is a cosmetic preference and backdrop-filter
+  // can be expensive on low-end devices.
+  backdropBlur: false,
+
   // Custom styles to inject into Shadow DOM
   customStyles: '',
 
@@ -250,7 +255,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];

@@ -317,6 +317,14 @@ ${config.buttonStyle === 'outline' ? `
   animation: zest-fade-in 0.2s ease-out;
 }
 
+${config.backdropBlur ? `
+.zest-modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+` : ''}
+
 @keyframes zest-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }

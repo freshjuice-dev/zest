@@ -35,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scale). `top-left` / `top-right` mirror the existing bottom corners.
   Existing positions are unchanged.
 
+- **Optional backdrop blur on settings modal.** New `backdropBlur`
+  option (default `false`) applies CSS `backdrop-filter: blur(8px)` to
+  the modal overlay, blurring the page content behind it. Off by default
+  because `backdrop-filter` can be expensive on low-end devices. Enable
+  via `backdropBlur: true` or `data-backdrop-blur="on"`.
+
 [#5]: https://github.com/freshjuice-dev/zest/issues/5
 
 ## [2.5.1] - 2026-06-29

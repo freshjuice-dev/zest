@@ -54,6 +54,11 @@ function parseDataAttributes() {
   const buttonStyle = script.getAttribute('data-button-style');
   if (buttonStyle !== null) config.buttonStyle = buttonStyle;
 
+  // Backdrop blur: blur the page content behind the settings modal.
+  // Off by default. data-backdrop-blur="on" / "true" / "yes" enables it.
+  const backdropBlur = script.getAttribute('data-backdrop-blur');
+  if (backdropBlur !== null) config.backdropBlur = backdropBlur !== 'false';
+
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');
   if (autoInit !== null) config.autoInit = autoInit !== 'false';

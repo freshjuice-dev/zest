@@ -84,6 +84,11 @@
       "default": "",
       "description": "Custom CSS to inject into Shadow DOM"
     },
+    "backdropBlur": {
+      "type": "boolean",
+      "default": false,
+      "description": "Blur the page content behind the settings modal overlay. Off by default — backdrop-filter can be expensive on low-end devices."
+    },
     "blockedDomains": {
       "type": "array",
       "items": {
