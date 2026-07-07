@@ -28,6 +28,18 @@
       "default": "#0071e3",
       "description": "Accent color for buttons (hex format)"
     },
+    "buttonStyle": {
+      "type": "string",
+      "enum": ["fill", "outline"],
+      "default": "fill",
+      "description": "Style of the Accept / Reject buttons. 'fill' (default) renders solid buttons of equal prominence; 'outline' renders accent-bordered transparent buttons."
+    },
+    "buttonLayout": {
+      "type": "string",
+      "enum": ["row", "split", "split-modern"],
+      "default": "row",
+      "description": "Button layout in the banner and modal footer. 'row' (default) puts all buttons in a single row; 'split' puts the settings/save button on the left and groups accept+reject on the right; 'split-modern' does the same but with settings/save as primary and accept+reject as secondary."
+    },
     "mode": {
       "type": "string",
       "enum": ["manual", "safe", "strict", "doomsday"],

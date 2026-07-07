@@ -111,6 +111,12 @@ window.ZestConfig = {
   // Button style: 'fill' (solid, default) or 'outline' (bordered, transparent)
   buttonStyle: 'fill',
 
+  // Button layout: 'row' (default), 'split', or 'split-modern'
+  // row: all buttons in one row
+  // split: settings on the left, accept+reject (primary) on the right
+  // split-modern: settings as primary on the left, accept+reject (secondary) on the right
+  buttonLayout: 'row',
+
   // Blur the page content behind the modal and hard wall, in pixels.
   // 0 disables. Default: 0 (backdrop-filter is expensive on low-end devices).
   backdropBlur: 0,
@@ -159,6 +165,7 @@ window.ZestConfig = {
   data-branding="false"
   data-hide-categories="analytics,functional"
   data-backdrop-blur="8"
+  data-button-layout="split"
   data-hard-wall="on"
 ></script>
 ```

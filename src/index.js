@@ -311,6 +311,7 @@ const Zest = {
   reset() {
     coreReset();
     hideModal();
+    hideBanner();
     removeWidget();
     removeNotice();
     if (isInitialized()) {

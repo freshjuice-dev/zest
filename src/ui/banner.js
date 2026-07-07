@@ -34,12 +34,39 @@ function createBannerHTML(config) {
         </div>`
     : '';
 
-  return `
-    ${wall}
-    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="${config.hardWall ? 'true' : 'false'}" aria-label="${escapeHTML(labels.title)}">
-      <h2 class="zest-banner__title">${escapeHTML(labels.title)}</h2>
-      <p class="zest-banner__description">${escapeHTML(labels.description)}</p>
-      <div class="zest-banner__buttons">
+  const layout = config.buttonLayout === 'split' || config.buttonLayout === 'split-modern'
+    ? config.buttonLayout
+    : 'row';
+
+  const buttonsHTML = layout === 'split-modern'
+    ? `<div class="zest-banner__buttons zest-banner__buttons--split">
+        <button type="button" class="zest-btn zest-btn--primary" data-action="settings">
+          ${escapeHTML(labels.settings)}
+        </button>
+        <div class="zest-banner__buttons-group">
+          <button type="button" class="zest-btn zest-btn--secondary" data-action="reject-all">
+            ${escapeHTML(labels.rejectAll)}
+          </button>
+          <button type="button" class="zest-btn zest-btn--secondary" data-action="accept-all">
+            ${escapeHTML(labels.acceptAll)}
+          </button>
+        </div>
+      </div>`
+    : layout === 'split'
+    ? `<div class="zest-banner__buttons zest-banner__buttons--split">
+        <button type="button" class="zest-btn zest-btn--ghost" data-action="settings">
+          ${escapeHTML(labels.settings)}
+        </button>
+        <div class="zest-banner__buttons-group">
+          <button type="button" class="zest-btn zest-btn--primary" data-action="reject-all">
+            ${escapeHTML(labels.rejectAll)}
+          </button>
+          <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
+            ${escapeHTML(labels.acceptAll)}
+          </button>
+        </div>
+      </div>`
+    : `<div class="zest-banner__buttons">
         <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
           ${escapeHTML(labels.acceptAll)}
         </button>
@@ -49,7 +76,14 @@ function createBannerHTML(config) {
         <button type="button" class="zest-btn zest-btn--ghost" data-action="settings">
           ${escapeHTML(labels.settings)}
         </button>
-      </div>
+      </div>`;
+
+  return `
+    ${wall}
+    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="${config.hardWall ? 'true' : 'false'}" aria-label="${escapeHTML(labels.title)}">
+      <h2 class="zest-banner__title">${escapeHTML(labels.title)}</h2>
+      <p class="zest-banner__description">${escapeHTML(labels.description)}</p>
+      ${buttonsHTML}
       ${branding}
     </div>
   `;
@@ -80,7 +114,10 @@ export function createBanner(callbacks = {}) {
   // Add banner HTML
   const container = document.createElement('div');
   container.innerHTML = createBannerHTML(config);
-  shadowRoot.appendChild(container.firstElementChild);
+  // Append all children (wall + banner), not just the first
+  while (container.firstChild) {
+    shadowRoot.appendChild(container.firstChild);
+  }
 
   // Add event listeners
   const banner = shadowRoot.querySelector('.zest-banner');

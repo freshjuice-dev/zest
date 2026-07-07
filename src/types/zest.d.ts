@@ -223,6 +223,13 @@ export interface InitOptions {
    */
   buttonStyle?: 'fill' | 'outline';
   /**
+   * Button layout in the banner and modal footer. `'row'` (default)
+   * puts all buttons in a single row; `'split'` puts the settings/save
+   * button on the left and groups accept+reject on the right. Also
+   * accepted via `data-button-layout`.
+   */
+  buttonLayout?: 'row' | 'split' | 'split-modern';
+  /**
    * Blur radius in pixels for the page content behind the modal overlay
    * and hard consent wall. `0` disables blur. Default `0` —
    * `backdrop-filter` can be expensive on low-end devices. Also accepted

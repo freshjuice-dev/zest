@@ -35,11 +35,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scale). `top-left` / `top-right` mirror the existing bottom corners.
   Existing positions are unchanged.
 
-- **Optional backdrop blur on settings modal.** New `backdropBlur`
-  option (default `false`) applies CSS `backdrop-filter: blur(8px)` to
-  the modal overlay, blurring the page content behind it. Off by default
-  because `backdrop-filter` can be expensive on low-end devices. Enable
-  via `backdropBlur: true` or `data-backdrop-blur="on"`.
+- **Button layout option: `row`, `split`, `split-modern`.** New
+  `buttonLayout` config (default `row`) controls how buttons are
+  arranged in the banner and modal footer. `row` is the existing
+  all-in-one-line layout. `split` puts settings/save on the left and
+  groups accept+reject (primary) on the right. `split-modern` does the
+  same but makes settings/save the primary button and accept+reject
+  secondary, drawing attention to the preferences action. Also accepted
+  via `data-button-layout`. New `--secondary` button class for
+  outlined accent-color buttons.
+
+- **Backdrop blur as pixel value.** `backdropBlur` is now a number in
+  pixels (e.g. `8`) instead of a boolean. `0` disables. The pixel value
+  is passed through to `backdrop-filter: blur(Npx)`. Also accepted via
+  `data-backdrop-blur="8"` (clamped 0-50).
+
+- **Unified `--zest-overlay` CSS variable.** The modal overlay and hard
+  consent wall now share a single `--zest-overlay` custom property
+  (default `rgba(0, 0, 0, 0.5)`) for their background color. One
+  variable, one color, everywhere. Override it to match your site's
+  design.
 
 - **Hard consent wall.** New `hardWall` option (default `false`) renders
   a full-viewport overlay behind the consent banner that blocks all
@@ -49,6 +64,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Aggressive UX pattern, off by default. The banner becomes `aria-modal`
   when the wall is active. Enable via `hardWall: true` or
   `data-hard-wall="on"`.
+
+- **`reset()` now hides the banner before re-showing.** Previously
+  `reset()` could leave a stale banner element in the DOM, causing
+  errors when the wall element was the first child. Fixed.
 
 [#5]: https://github.com/freshjuice-dev/zest/issues/5
 

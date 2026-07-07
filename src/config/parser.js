@@ -54,6 +54,11 @@ function parseDataAttributes() {
   const buttonStyle = script.getAttribute('data-button-style');
   if (buttonStyle !== null) config.buttonStyle = buttonStyle;
 
+  // Button layout: 'row' (default, all in one row) or 'split'
+  // (settings on the left, accept+reject grouped on the right).
+  const buttonLayout = script.getAttribute('data-button-layout');
+  if (buttonLayout !== null) config.buttonLayout = buttonLayout;
+
   // Backdrop blur: blur the page content behind the modal and hard wall.
   // A number in pixels (e.g. data-backdrop-blur="8"). 0 or "false" disables.
   const backdropBlurAttr = script.getAttribute('data-backdrop-blur');

@@ -258,6 +258,19 @@ export function generateStyles(config) {
   gap: 8px;
 }
 
+.zest-banner__buttons--split,
+.zest-modal__footer--split {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.zest-banner__buttons-group,
+.zest-modal__buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 /* Buttons */
 .zest-btn {
   display: inline-flex;
@@ -314,6 +327,16 @@ ${config.buttonStyle === 'outline' ? `
 .zest-btn--ghost:hover {
   background: var(--zest-bg-secondary);
   color: var(--zest-text);
+}
+
+.zest-btn--secondary {
+  background: transparent;
+  color: var(--zest-accent);
+  border: 1px solid var(--zest-accent);
+}
+
+.zest-btn--secondary:hover {
+  background: var(--zest-bg-secondary);
 }
 
 /* Modal */
@@ -613,6 +636,18 @@ ${config.buttonStyle === 'outline' ? `
 
   .zest-banner__buttons {
     flex-direction: column;
+  }
+
+  .zest-banner__buttons--split,
+  .zest-modal__footer--split {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .zest-banner__buttons-group,
+  .zest-modal__buttons-group {
+    flex-direction: column;
+    width: 100%;
   }
 
   .zest-btn {

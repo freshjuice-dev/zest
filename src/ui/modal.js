@@ -84,6 +84,33 @@ function createModalHTML(config, consent) {
         <div class="zest-modal__body">
           ${categoriesHTML}
         </div>
+        ${config.buttonLayout === 'split-modern' ? `
+        <div class="zest-modal__footer zest-modal__footer--split">
+          <button type="button" class="zest-btn zest-btn--primary" data-action="save">
+            ${escapeHTML(labels.save)}
+          </button>
+          <div class="zest-modal__buttons-group">
+            <button type="button" class="zest-btn zest-btn--secondary" data-action="reject-all">
+              ${escapeHTML(labels.rejectAll)}
+            </button>
+            <button type="button" class="zest-btn zest-btn--secondary" data-action="accept-all">
+              ${escapeHTML(labels.acceptAll)}
+            </button>
+          </div>
+        </div>` : config.buttonLayout === 'split' ? `
+        <div class="zest-modal__footer zest-modal__footer--split">
+          <button type="button" class="zest-btn zest-btn--ghost" data-action="save">
+            ${escapeHTML(labels.save)}
+          </button>
+          <div class="zest-modal__buttons-group">
+            <button type="button" class="zest-btn zest-btn--primary" data-action="reject-all">
+              ${escapeHTML(labels.rejectAll)}
+            </button>
+            <button type="button" class="zest-btn zest-btn--primary" data-action="accept-all">
+              ${escapeHTML(labels.acceptAll)}
+            </button>
+          </div>
+        </div>` : `
         <div class="zest-modal__footer">
           <button type="button" class="zest-btn zest-btn--primary" data-action="save">
             ${escapeHTML(labels.save)}
@@ -94,7 +121,7 @@ function createModalHTML(config, consent) {
           <button type="button" class="zest-btn zest-btn--primary" data-action="reject-all">
             ${escapeHTML(labels.rejectAll)}
           </button>
-        </div>
+        </div>`}
         ${branding}
       </div>
     </div>

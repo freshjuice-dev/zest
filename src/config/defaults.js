@@ -77,6 +77,11 @@ export const DEFAULTS = {
   //   'outline' — accent-colored border, transparent background
   buttonStyle: 'fill',
 
+  // Button layout in the banner and modal footer:
+  //   'row'   — all buttons in a single row (default)
+  //   'split' — settings on the left, accept+reject grouped on the right
+  buttonLayout: 'row',
+
   // Blur the page content behind the settings modal and hard wall.
   // A number in pixels (e.g. 8) or false/0 to disable. Off by default —
   // backdrop-filter can be expensive on low-end devices.
@@ -214,6 +219,22 @@ export function normalizeButtonStyle(value) {
 }
 
 /**
+ * Normalise a `buttonLayout` config value into a canonical form:
+ *   'row' | 'split'
+ *
+ * Unknown values fall back to 'row' (the default, fail-safe).
+ */
+export function normalizeButtonLayout(value) {
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase();
+    if (v === 'split') return 'split';
+    if (v === 'split-modern') return 'split-modern';
+    if (v === 'row') return 'row';
+  }
+  return 'row';
+}
+
+/**
  * Validate and normalise the opt-in `geo` config block. Unknown / unsafe
  * values are dropped; `endpoint` must be an http(s) URL. Returns null when no
  * usable source is present.
@@ -261,7 +282,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
@@ -279,6 +300,12 @@ export function mergeConfig(userConfig) {
   // outline branch in styles.js — unknown values stay on the safe 'fill' default.
   if (userConfig.buttonStyle !== undefined) {
     config.buttonStyle = normalizeButtonStyle(userConfig.buttonStyle);
+  }
+
+  // Button layout: 'row' (default) or 'split'. Normalised so unknown values
+  // fall back to 'row' rather than silently switching to split.
+  if (userConfig.buttonLayout !== undefined) {
+    config.buttonLayout = normalizeButtonLayout(userConfig.buttonLayout);
   }
 
   // Detect language and get translations
