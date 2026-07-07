@@ -89,6 +89,11 @@
       "default": false,
       "description": "Blur the page content behind the settings modal overlay. Off by default — backdrop-filter can be expensive on low-end devices."
     },
+    "hardWall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Full-viewport overlay behind the consent banner that blocks page interaction until the visitor accepts or rejects. Ensures provable awareness of the consent choice. Aggressive UX — off by default."
+    },
     "blockedDomains": {
       "type": "array",
       "items": {

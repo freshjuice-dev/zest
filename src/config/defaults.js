@@ -82,6 +82,12 @@ export const DEFAULTS = {
   // can be expensive on low-end devices.
   backdropBlur: false,
 
+  // Hard consent wall: a full-viewport overlay behind the banner that
+  // blocks interaction with the page until the visitor accepts or rejects.
+  // Off by default — it is an aggressive UX pattern. Use when the site
+  // needs provable awareness that the visitor saw and decided.
+  hardWall: false,
+
   // Custom styles to inject into Shadow DOM
   customStyles: '',
 
@@ -255,7 +261,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];

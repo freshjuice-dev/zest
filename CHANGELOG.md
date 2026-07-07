@@ -41,6 +41,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   because `backdrop-filter` can be expensive on low-end devices. Enable
   via `backdropBlur: true` or `data-backdrop-blur="on"`.
 
+- **Hard consent wall.** New `hardWall` option (default `false`) renders
+  a full-viewport overlay behind the consent banner that blocks all
+  page interaction until the visitor accepts or rejects. Ensures
+  provable awareness that the visitor saw and decided — useful for
+  compliance-sensitive sites that need 100% decision visibility.
+  Aggressive UX pattern, off by default. The banner becomes `aria-modal`
+  when the wall is active. Enable via `hardWall: true` or
+  `data-hard-wall="on"`.
+
 [#5]: https://github.com/freshjuice-dev/zest/issues/5
 
 ## [2.5.1] - 2026-06-29

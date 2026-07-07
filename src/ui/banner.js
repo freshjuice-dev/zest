@@ -20,6 +20,12 @@ function createBannerHTML(config) {
   const rawPosition = config.position || 'bottom';
   const position = SAFE_POSITIONS.has(rawPosition) ? rawPosition : 'bottom';
 
+  // Full-viewport overlay behind the banner that blocks page interaction
+  // until the visitor accepts or rejects. Only rendered when hardWall is on.
+  const wall = config.hardWall
+    ? '<div class="zest-banner-wall" aria-hidden="true"></div>'
+    : '';
+
   // "Powered by Zest" attribution. `branding` may be true | false | 'modal'
   // | 'banner' — only render here when the banner surface is opted in.
   const branding = shouldShowBranding(config.branding, 'banner')
@@ -29,7 +35,8 @@ function createBannerHTML(config) {
     : '';
 
   return `
-    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="false" aria-label="${escapeHTML(labels.title)}">
+    ${wall}
+    <div class="zest-banner zest-banner--${position}" role="dialog" aria-modal="${config.hardWall ? 'true' : 'false'}" aria-label="${escapeHTML(labels.title)}">
       <h2 class="zest-banner__title">${escapeHTML(labels.title)}</h2>
       <p class="zest-banner__description">${escapeHTML(labels.description)}</p>
       <div class="zest-banner__buttons">

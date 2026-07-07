@@ -114,6 +114,10 @@ window.ZestConfig = {
   // Blur the page content behind the settings modal overlay. Default: false.
   backdropBlur: false,
 
+  // Hard consent wall: block page interaction until the visitor decides.
+  // Ensures provable awareness. Aggressive UX — default: false.
+  hardWall: false,
+
   // Consent expiration in days
   expiration: 365,
 
@@ -154,6 +158,7 @@ window.ZestConfig = {
   data-branding="false"
   data-hide-categories="analytics,functional"
   data-backdrop-blur="on"
+  data-hard-wall="on"
 ></script>
 ```
 
@@ -165,6 +170,9 @@ window.ZestConfig = {
 > Hidden categories are forced to false (rejected). Essential cannot be hidden.
 
 > `data-backdrop-blur="on"` blurs the page content behind the settings modal.
+
+> `data-hard-wall="on"` blocks page interaction until the visitor accepts
+> or rejects consent, ensuring provable awareness.
 
 ## API
 

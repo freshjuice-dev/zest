@@ -69,6 +69,23 @@ export function generateStyles(config) {
   box-sizing: border-box;
 }
 
+/* Hard consent wall — blocks page interaction until visitor decides */
+.zest-banner-wall {
+  position: fixed;
+  inset: 0;
+  z-index: 999998;
+  background: rgba(0, 0, 0, 0.5);
+  animation: zest-fade-in 0.2s ease-out;
+}
+
+${config.backdropBlur ? `
+.zest-banner-wall {
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+` : ''}
+
 /* Banner */
 .zest-banner {
   position: fixed;

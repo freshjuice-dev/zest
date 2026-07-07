@@ -59,6 +59,11 @@ function parseDataAttributes() {
   const backdropBlur = script.getAttribute('data-backdrop-blur');
   if (backdropBlur !== null) config.backdropBlur = backdropBlur !== 'false';
 
+  // Hard consent wall: block page interaction until the visitor decides.
+  // Off by default. data-hard-wall="on" / "true" / "yes" enables it.
+  const hardWall = script.getAttribute('data-hard-wall');
+  if (hardWall !== null) config.hardWall = hardWall !== 'false';
+
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');
   if (autoInit !== null) config.autoInit = autoInit !== 'false';

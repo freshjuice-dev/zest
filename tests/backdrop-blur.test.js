@@ -39,9 +39,10 @@ describe('backdropBlur styles', () => {
     expect(cssNoBlur).toContain('rgba(0, 0, 0, 0.5)');
   });
 
-  it('blur block only present once (not duplicated)', () => {
+  it('blur block appears for both modal overlay and banner wall', () => {
     const css = generateStyles({ accentColor: '#0071e3', backdropBlur: true });
     const matches = css.match(/backdrop-filter:\s*blur\(8px\)/g);
-    expect(matches).toHaveLength(2); // -webkit- prefix + standard
+    // 2 for modal overlay (-webkit + standard) + 2 for banner wall = 4
+    expect(matches).toHaveLength(4);
   });
 });

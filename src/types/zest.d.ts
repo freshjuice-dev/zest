@@ -229,6 +229,13 @@ export interface InitOptions {
    * accepted via `data-backdrop-blur`.
    */
   backdropBlur?: boolean;
+  /**
+   * Full-viewport overlay behind the consent banner that blocks page
+   * interaction until the visitor accepts or rejects. Ensures provable
+   * awareness of the consent choice. Aggressive UX — default `false`.
+   * Also accepted via `data-hard-wall`.
+   */
+  hardWall?: boolean;
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
   /** Script-blocking mode. Default `'safe'`. */
