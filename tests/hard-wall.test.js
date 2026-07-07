@@ -37,9 +37,9 @@ describe('hardWall styles', () => {
     expect(parseInt(wallMatch[1])).toBeLessThan(parseInt(bannerMatch[1]));
   });
 
-  it('wall has semi-transparent background', () => {
+  it('wall uses --zest-overlay variable for background', () => {
     const css = generateStyles({ accentColor: '#0071e3', hardWall: true });
-    expect(css).toMatch(/\.zest-banner-wall\s*\{[^}]*background:\s*rgba\(0,\s*0,\s*0,\s*0\.5\)/);
+    expect(css).toMatch(/\.zest-banner-wall\s*\{[^}]*background:\s*var\(--zest-overlay\)/);
   });
 
   it('wall has fade-in animation', () => {
@@ -47,9 +47,8 @@ describe('hardWall styles', () => {
     expect(css).toMatch(/\.zest-banner-wall\s*\{[^}]*animation:\s*zest-fade-in/);
   });
 
-  it('backdropBlur applies to wall too when both are on', () => {
-    const css = generateStyles({ accentColor: '#0071e3', hardWall: true, backdropBlur: true });
-    // Should have a backdrop-filter override for the wall
+  it('backdropBlur applies blur to wall when both are on', () => {
+    const css = generateStyles({ accentColor: '#0071e3', hardWall: true, backdropBlur: 8 });
     expect(css).toMatch(/\.zest-banner-wall\s*\{[^}]*backdrop-filter:\s*blur\(8px\)/);
   });
 });

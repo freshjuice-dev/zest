@@ -54,10 +54,17 @@ function parseDataAttributes() {
   const buttonStyle = script.getAttribute('data-button-style');
   if (buttonStyle !== null) config.buttonStyle = buttonStyle;
 
-  // Backdrop blur: blur the page content behind the settings modal.
-  // Off by default. data-backdrop-blur="on" / "true" / "yes" enables it.
-  const backdropBlur = script.getAttribute('data-backdrop-blur');
-  if (backdropBlur !== null) config.backdropBlur = backdropBlur !== 'false';
+  // Backdrop blur: blur the page content behind the modal and hard wall.
+  // A number in pixels (e.g. data-backdrop-blur="8"). 0 or "false" disables.
+  const backdropBlurAttr = script.getAttribute('data-backdrop-blur');
+  if (backdropBlurAttr !== null) {
+    if (backdropBlurAttr === 'false' || backdropBlurAttr === '0') {
+      config.backdropBlur = 0;
+    } else {
+      const px = parseInt(backdropBlurAttr, 10);
+      config.backdropBlur = isNaN(px) ? 8 : Math.max(0, Math.min(50, px));
+    }
+  }
 
   // Hard consent wall: block page interaction until the visitor decides.
   // Off by default. data-hard-wall="on" / "true" / "yes" enables it.

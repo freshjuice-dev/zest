@@ -85,9 +85,11 @@
       "description": "Custom CSS to inject into Shadow DOM"
     },
     "backdropBlur": {
-      "type": "boolean",
-      "default": false,
-      "description": "Blur the page content behind the settings modal overlay. Off by default — backdrop-filter can be expensive on low-end devices."
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 50,
+      "description": "Blur radius in pixels for the page content behind the modal overlay and hard consent wall. 0 disables blur. backdrop-filter can be expensive on low-end devices."
     },
     "hardWall": {
       "type": "boolean",

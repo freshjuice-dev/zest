@@ -77,10 +77,10 @@ export const DEFAULTS = {
   //   'outline' — accent-colored border, transparent background
   buttonStyle: 'fill',
 
-  // Blur the page content behind the settings modal overlay.
-  // Off by default — it is a cosmetic preference and backdrop-filter
-  // can be expensive on low-end devices.
-  backdropBlur: false,
+  // Blur the page content behind the settings modal and hard wall.
+  // A number in pixels (e.g. 8) or false/0 to disable. Off by default —
+  // backdrop-filter can be expensive on low-end devices.
+  backdropBlur: 0,
 
   // Hard consent wall: a full-viewport overlay behind the banner that
   // blocks interaction with the page until the visitor accepts or rejects.

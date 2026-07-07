@@ -223,12 +223,12 @@ export interface InitOptions {
    */
   buttonStyle?: 'fill' | 'outline';
   /**
-   * Blur the page content behind the settings modal overlay using CSS
-   * `backdrop-filter`. Default `false` — it is a cosmetic preference
-   * and `backdrop-filter` can be expensive on low-end devices. Also
-   * accepted via `data-backdrop-blur`.
+   * Blur radius in pixels for the page content behind the modal overlay
+   * and hard consent wall. `0` disables blur. Default `0` —
+   * `backdrop-filter` can be expensive on low-end devices. Also accepted
+   * via `data-backdrop-blur`.
    */
-  backdropBlur?: boolean;
+  backdropBlur?: number;
   /**
    * Full-viewport overlay behind the consent banner that blocks page
    * interaction until the visitor accepts or rejects. Ensures provable

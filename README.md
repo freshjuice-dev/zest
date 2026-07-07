@@ -111,8 +111,9 @@ window.ZestConfig = {
   // Button style: 'fill' (solid, default) or 'outline' (bordered, transparent)
   buttonStyle: 'fill',
 
-  // Blur the page content behind the settings modal overlay. Default: false.
-  backdropBlur: false,
+  // Blur the page content behind the modal and hard wall, in pixels.
+  // 0 disables. Default: 0 (backdrop-filter is expensive on low-end devices).
+  backdropBlur: 0,
 
   // Hard consent wall: block page interaction until the visitor decides.
   // Ensures provable awareness. Aggressive UX — default: false.
@@ -157,7 +158,7 @@ window.ZestConfig = {
   data-geo="on"
   data-branding="false"
   data-hide-categories="analytics,functional"
-  data-backdrop-blur="on"
+  data-backdrop-blur="8"
   data-hard-wall="on"
 ></script>
 ```
@@ -169,7 +170,8 @@ window.ZestConfig = {
 > to hide from the settings modal (`analytics`, `functional`, `marketing`).
 > Hidden categories are forced to false (rejected). Essential cannot be hidden.
 
-> `data-backdrop-blur="on"` blurs the page content behind the settings modal.
+> `data-backdrop-blur="8"` blurs the page content behind the modal and
+> hard wall by the given pixel radius. `0` or `false` disables it.
 
 > `data-hard-wall="on"` blocks page interaction until the visitor accepts
 > or rejects consent, ensuring provable awareness.
@@ -565,6 +567,7 @@ zest-banner, zest-modal, zest-widget {
   --zest-text: #1f2937;
   --zest-text-secondary: #6b7280;
   --zest-border: #e5e7eb;
+  --zest-overlay: rgba(0, 0, 0, 0.5);
   --zest-radius: 12px;
   --zest-radius-sm: 8px;
 }
@@ -577,6 +580,10 @@ On older browsers, Zest falls back to a JS-computed WCAG luminance
 value. Light accent colors (yellow, light blue) get dark text
 automatically; dark accent colors keep white. Override it to force a
 specific text color on primary buttons.
+
+`--zest-overlay` controls the background color of the modal overlay and
+the hard consent wall. Same color everywhere. Override it to match your
+site's design.
 
 ### 2. `customStyles` config option
 

@@ -25,6 +25,7 @@ export function generateStyles(config) {
   --zest-text: #1f2937;
   --zest-text-secondary: #6b7280;
   --zest-border: #e5e7eb;
+  --zest-overlay: rgba(0, 0, 0, 0.5);
   --zest-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   --zest-radius: 12px;
   --zest-radius-sm: 8px;
@@ -74,17 +75,11 @@ export function generateStyles(config) {
   position: fixed;
   inset: 0;
   z-index: 999998;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--zest-overlay);
+  ${config.backdropBlur ? `-webkit-backdrop-filter: blur(${config.backdropBlur}px);
+  backdrop-filter: blur(${config.backdropBlur}px);` : ''}
   animation: zest-fade-in 0.2s ease-out;
 }
-
-${config.backdropBlur ? `
-.zest-banner-wall {
-  background: rgba(0, 0, 0, 0.3);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-` : ''}
 
 /* Banner */
 .zest-banner {
@@ -330,17 +325,11 @@ ${config.buttonStyle === 'outline' ? `
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--zest-overlay);
+  ${config.backdropBlur ? `-webkit-backdrop-filter: blur(${config.backdropBlur}px);
+  backdrop-filter: blur(${config.backdropBlur}px);` : ''}
   animation: zest-fade-in 0.2s ease-out;
 }
-
-${config.backdropBlur ? `
-.zest-modal-overlay {
-  background: rgba(0, 0, 0, 0.3);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-` : ''}
 
 @keyframes zest-fade-in {
   from { opacity: 0; }

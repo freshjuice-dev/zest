@@ -5,42 +5,46 @@ import { mergeConfig } from '../src/config/defaults.js';
 const base = { lang: 'en' };
 
 describe('backdropBlur config', () => {
-  it('defaults to false', () => {
-    expect(mergeConfig(base).backdropBlur).toBe(false);
+  it('defaults to 0 (disabled)', () => {
+    expect(mergeConfig(base).backdropBlur).toBe(0);
   });
 
-  it('preserves true from user config', () => {
-    expect(mergeConfig({ ...base, backdropBlur: true }).backdropBlur).toBe(true);
+  it('preserves a number from user config', () => {
+    expect(mergeConfig({ ...base, backdropBlur: 8 }).backdropBlur).toBe(8);
   });
 
-  it('preserves false from user config', () => {
-    expect(mergeConfig({ ...base, backdropBlur: false }).backdropBlur).toBe(false);
+  it('0 disables blur', () => {
+    expect(mergeConfig({ ...base, backdropBlur: 0 }).backdropBlur).toBe(0);
   });
 });
 
 describe('backdropBlur styles', () => {
-  it('no backdrop-filter when backdropBlur is false (default)', () => {
+  it('no backdrop-filter when backdropBlur is 0 (default)', () => {
     const css = generateStyles({ accentColor: '#0071e3' });
     expect(css).not.toContain('backdrop-filter');
     expect(css).not.toContain('-webkit-backdrop-filter');
   });
 
-  it('adds backdrop-filter when backdropBlur is true', () => {
-    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: true });
+  it('adds backdrop-filter with pixel value when set', () => {
+    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: 8 });
     expect(css).toContain('backdrop-filter: blur(8px)');
     expect(css).toContain('-webkit-backdrop-filter: blur(8px)');
   });
 
-  it('reduces overlay opacity when blur is on', () => {
-    const cssBlur = generateStyles({ accentColor: '#0071e3', backdropBlur: true });
-    const cssNoBlur = generateStyles({ accentColor: '#0071e3' });
-    // With blur the overlay background is lighter (0.3 vs 0.5)
-    expect(cssBlur).toContain('rgba(0, 0, 0, 0.3)');
-    expect(cssNoBlur).toContain('rgba(0, 0, 0, 0.5)');
+  it('different pixel value produces different blur', () => {
+    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: 12 });
+    expect(css).toContain('backdrop-filter: blur(12px)');
   });
 
-  it('blur block appears for both modal overlay and banner wall', () => {
-    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: true });
+  it('overlay uses --zest-overlay variable (same color for all cases)', () => {
+    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: 8 });
+    expect(css).toContain('background: var(--zest-overlay)');
+    // No hardcoded rgba for overlay backgrounds
+    expect(css).not.toMatch(/background:\s*rgba\(0,\s*0,\s*0,\s*0\.[35]\)/);
+  });
+
+  it('blur applies to both modal overlay and banner wall', () => {
+    const css = generateStyles({ accentColor: '#0071e3', backdropBlur: 8, hardWall: true });
     const matches = css.match(/backdrop-filter:\s*blur\(8px\)/g);
     // 2 for modal overlay (-webkit + standard) + 2 for banner wall = 4
     expect(matches).toHaveLength(4);
