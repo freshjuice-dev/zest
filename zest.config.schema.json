@@ -12,7 +12,7 @@
     },
     "position": {
       "type": "string",
-      "enum": ["bottom", "bottom-left", "bottom-right", "top"],
+      "enum": ["bottom", "bottom-left", "bottom-right", "top", "top-left", "top-right", "center"],
       "default": "bottom",
       "description": "Position of the consent banner"
     },

@@ -103,6 +103,22 @@ export function generateStyles(config) {
   transform: translateX(-50%);
 }
 
+.zest-banner--top-left {
+  top: 20px;
+  left: 20px;
+}
+
+.zest-banner--top-right {
+  top: 20px;
+  right: 20px;
+}
+
+.zest-banner--center {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 @keyframes zest-slide-in {
   from {
     opacity: 0;
@@ -111,6 +127,50 @@ export function generateStyles(config) {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes zest-slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes zest-slide-in-top-left {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zest-slide-in-top-right {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zest-fade-in-center {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -142,6 +202,22 @@ export function generateStyles(config) {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.zest-banner--top {
+  animation-name: zest-slide-in-top;
+}
+
+.zest-banner--top-left {
+  animation-name: zest-slide-in-top-left;
+}
+
+.zest-banner--top-right {
+  animation-name: zest-slide-in-top-right;
+}
+
+.zest-banner--center {
+  animation-name: zest-fade-in-center;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -485,9 +561,18 @@ ${config.buttonStyle === 'outline' ? `
     bottom: 10px;
   }
 
-  .zest-banner--top {
+  .zest-banner--top,
+  .zest-banner--top-left,
+  .zest-banner--top-right {
     top: 10px;
-    transform: none;
+  }
+
+  /* Center stays centered on mobile, just with responsive width */
+  .zest-banner--center {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
   }
 
   @keyframes zest-slide-in {
@@ -498,6 +583,17 @@ ${config.buttonStyle === 'outline' ? `
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes zest-fade-in-center {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 

@@ -89,7 +89,7 @@ export default defineConfig({
 
 ```javascript
 window.ZestConfig = {
-  // Position: 'bottom' | 'bottom-left' | 'bottom-right' | 'top'
+  // Position: 'bottom' | 'bottom-left' | 'bottom-right' | 'top' | 'top-left' | 'top-right' | 'center'
   position: 'bottom',
 
   // Theme: 'light' | 'dark' | 'auto' (default: 'auto' follows system)

@@ -10,7 +10,7 @@ import { escapeHTML } from '../core/security.js';
 let bannerElement = null;
 let shadowRoot = null;
 
-const SAFE_POSITIONS = new Set(['bottom', 'bottom-left', 'bottom-right', 'top']);
+const SAFE_POSITIONS = new Set(['bottom', 'bottom-left', 'bottom-right', 'top', 'top-left', 'top-right', 'center']);
 
 /**
  * Create the banner HTML

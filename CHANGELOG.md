@@ -29,6 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   blue) get dark text automatically; dark accent colors keep white.
   Override it to force a specific text color.
 
+- **New banner positions: `top-left`, `top-right`, `center`.** The
+  `position` option now accepts seven values. `center` places the banner
+  dead-center of the viewport (overlay-style, fades in with a subtle
+  scale). `top-left` / `top-right` mirror the existing bottom corners.
+  Existing positions are unchanged.
+
 [#5]: https://github.com/freshjuice-dev/zest/issues/5
 
 ## [2.5.1] - 2026-06-29

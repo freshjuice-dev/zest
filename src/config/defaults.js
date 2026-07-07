@@ -12,7 +12,7 @@ export const DEFAULTS = {
   lang: 'auto',
 
   // UI positioning
-  position: 'bottom', // 'bottom' | 'bottom-left' | 'bottom-right' | 'top'
+  position: 'bottom', // 'bottom' | 'bottom-left' | 'bottom-right' | 'top' | 'top-left' | 'top-right' | 'center'
 
   // Theming
   theme: 'auto', // 'light' | 'dark' | 'auto'

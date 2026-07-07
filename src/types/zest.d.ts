@@ -127,7 +127,7 @@ export interface DNTDetails {
 export type DNTBehavior = 'reject' | 'preselect' | 'ignore';
 
 /** Banner position on the page. */
-export type BannerPosition = 'bottom' | 'bottom-left' | 'bottom-right' | 'top';
+export type BannerPosition = 'bottom' | 'bottom-left' | 'bottom-right' | 'top' | 'top-left' | 'top-right' | 'center';
 
 /** UI theme. `auto` follows `prefers-color-scheme`. */
 export type ZestTheme = 'light' | 'dark' | 'auto';
