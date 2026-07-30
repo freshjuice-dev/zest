@@ -604,11 +604,13 @@ ${config.buttonStyle === 'outline' ? `
     top: 10px;
   }
 
-  /* Center stays centered on mobile, just with responsive width */
+  /* Center stays centered on mobile with ~90% width */
   .zest-banner--center {
     top: 50%;
     left: 50%;
     right: auto;
+    width: calc(100% - 32px);
+    max-width: 480px;
     transform: translate(-50%, -50%);
   }
 

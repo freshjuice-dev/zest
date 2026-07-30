@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.7.0] - 2026-07-30
 
 ### Added
 
@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   caught by doomsday mode (third-party block) and by `blockedDomains` if
   listed. An allowed-domain check now runs before any block decision in the
   network, element, and script interceptors. Closes [#8].
+
+- **Center banner width on mobile.** The center-positioned banner shrunk
+  to content width on mobile, looking squeezed. It now takes
+  `calc(100% - 32px)` with a 480px cap. Closes [#7].
 
 ## [2.6.0] - 2026-07-07
 

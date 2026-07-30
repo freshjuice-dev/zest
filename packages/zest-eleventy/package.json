@@ -1,6 +1,6 @@
 {
   "name": "@freshjuice/zest-eleventy",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "type": "module",
   "description": "Eleventy (11ty) plugin for Zest cookie consent toolkit (GDPR/CCPA)",
   "keywords": [
@@ -52,7 +52,7 @@
     "test": "vitest run"
   },
   "peerDependencies": {
-    "@freshjuice/zest": "^2.6.0",
+    "@freshjuice/zest": "^2.7.0",
     "@11ty/eleventy": ">=2.0.0"
   },
   "devDependencies": {
