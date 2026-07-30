@@ -32,7 +32,7 @@
  * CSP or template-time removal.
  */
 
-import { getCategoryForScript, isThirdParty } from './known-trackers.js';
+import { getCategoryForScript, isThirdParty, isAllowedDomain } from './known-trackers.js';
 
 // Upper bound on queued blocked elements. Unbounded growth would be a
 // memory-exhaustion vector if a page (or a hostile script) tried to
@@ -48,6 +48,7 @@ const elementQueue = [];
 
 let blockingMode = 'safe';
 let customBlockedDomains = [];
+let customAllowedDomains = [];
 let installed = false;
 let checkConsent = () => false;
 
@@ -101,7 +102,7 @@ function matchesCustomDomains(hostname) {
 }
 
 function getBlockCategory(url) {
-  if (!url) return null;
+  if (!url || isAllowedDomain(url, customAllowedDomains)) return null;
   let hostname;
   try {
     hostname = new URL(url, location.href).hostname;
@@ -310,9 +311,10 @@ export function clearElementQueue() {
  * Install all element-level interceptors. Idempotent — second call
  * just refreshes mode + customDomains without rewrapping.
  */
-export function interceptElements(mode = 'safe', customDomains = []) {
+export function interceptElements(mode = 'safe', customDomains = [], allowedDomains = []) {
   blockingMode = mode;
   customBlockedDomains = Array.isArray(customDomains) ? customDomains : [];
+  customAllowedDomains = Array.isArray(allowedDomains) ? allowedDomains : [];
 
   if (installed) return true;
 

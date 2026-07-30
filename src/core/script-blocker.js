@@ -8,7 +8,7 @@
  * - doomsday: Block ALL third-party scripts
  */
 
-import { getCategoryForScript, isThirdParty } from './known-trackers.js';
+import { getCategoryForScript, isThirdParty, isAllowedDomain } from './known-trackers.js';
 
 // Categories the author has declared blockable. A script can self-label
 // into one of these, but not into 'essential' (a common bypass).
@@ -31,6 +31,9 @@ let blockingMode = 'safe';
 
 // Custom blocked domains (user-defined)
 let customBlockedDomains = [];
+
+// Custom allowed domains (user-defined) — passthrough even in doomsday
+let customAllowedDomains = [];
 
 // Reference to consent checker function
 let checkConsent = () => false;
@@ -108,6 +111,13 @@ function getScriptBlockCategory(script) {
     return null;
   }
 
+  const src = script.src;
+
+  // Never block allowed domains
+  if (src && isAllowedDomain(src, customAllowedDomains)) {
+    return null;
+  }
+
   // 1. Check for explicit data-consent-category attribute.
   // Only honor values from the blockable set; 'essential' and unknown
   // values fall through to the other checks.
@@ -115,8 +125,6 @@ function getScriptBlockCategory(script) {
   const explicitBlockable = explicitCategory && BLOCKABLE_CATEGORIES.has(explicitCategory)
     ? explicitCategory
     : null;
-
-  const src = script.src;
 
   // No src = inline script, only block if explicitly tagged (blockable only)
   if (!src) {
@@ -285,9 +293,10 @@ function handleMutations(mutations) {
 /**
  * Start observing for new scripts
  */
-export function startScriptBlocking(mode = 'safe', customDomains = []) {
+export function startScriptBlocking(mode = 'safe', customDomains = [], allowedDomains = []) {
   blockingMode = mode;
   customBlockedDomains = customDomains;
+  customAllowedDomains = Array.isArray(allowedDomains) ? allowedDomains : [];
 
   // Process existing scripts
   processExistingScripts();

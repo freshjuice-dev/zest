@@ -21,7 +21,7 @@
  * so blocked requests are dropped, not queued.
  */
 
-import { getCategoryForScript, isThirdParty } from './known-trackers.js';
+import { getCategoryForScript, isThirdParty, isAllowedDomain } from './known-trackers.js';
 
 // Originals captured at install time. Stored for restoration tests and
 // for any internal Zest network calls we may add later.
@@ -32,6 +32,7 @@ let originalSendBeacon = null;
 
 let blockingMode = 'safe';
 let customBlockedDomains = [];
+let customAllowedDomains = [];
 let installed = false;
 
 let checkConsent = () => false;
@@ -103,7 +104,7 @@ function matchesCustomDomains(hostname) {
  * mode-based tracker list (matching script-blocker priority).
  */
 function getBlockCategory(url) {
-  if (!url) return null;
+  if (!url || isAllowedDomain(url, customAllowedDomains)) return null;
   let hostname;
   try {
     hostname = new URL(url, location.href).hostname;
@@ -249,9 +250,10 @@ function patchSendBeacon() {
  * Install all network hooks. Safe to call multiple times — subsequent
  * calls just refresh mode + custom domain config without re-wrapping.
  */
-export function interceptNetwork(mode = 'safe', customDomains = []) {
+export function interceptNetwork(mode = 'safe', customDomains = [], allowedDomains = []) {
   blockingMode = mode;
   customBlockedDomains = Array.isArray(customDomains) ? customDomains : [];
+  customAllowedDomains = Array.isArray(allowedDomains) ? allowedDomains : [];
 
   if (installed) return true;
   patchFetch();

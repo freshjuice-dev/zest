@@ -287,6 +287,10 @@ export interface InitOptions {
   patterns?: Partial<Record<ConsentCategory, string[]>>;
   /** Consumer callbacks. */
   callbacks?: ZestCallbacks;
+  /** Custom domains to block (string or `{ domain, category }`). `allowedDomains` wins. */
+  blockedDomains?: (string | { domain: string; category: 'functional' | 'analytics' | 'marketing' })[];
+  /** Domains that bypass all blocking (incl. subdomains). `cookiezest.com` is always allowed. */
+  allowedDomains?: string[];
   /** Anything else — Zest tolerates unknown keys at runtime. */
   [key: string]: unknown;
 }

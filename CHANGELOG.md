@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`allowedDomains` config option.** Consumer-supplied domains that bypass
+  all blocking — overrides mode, `blockedDomains`, and doomsday third-party
+  blocking. Subdomains included. `cookiezest.com` is always allowed.
+
+### Fixed
+
+- **Zest no longer blocks its own geo gateway.** `geo.cookiezest.com` was
+  caught by doomsday mode (third-party block) and by `blockedDomains` if
+  listed. An allowed-domain check now runs before any block decision in the
+  network, element, and script interceptors. Closes [#8].
+
 ## [2.6.0] - 2026-07-07
 
 ### Added

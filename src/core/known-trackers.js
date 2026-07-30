@@ -177,6 +177,25 @@ export function getCategoryForScript(url, mode = 'safe') {
   return null;
 }
 
+/** Domains that bypass all blocking (Zest-owned + consumer-declared). */
+const ZEST_ALLOWED_DOMAINS = ['cookiezest.com'];
+
+/** True if url is a Zest-owned or consumer-allowed domain (incl. subdomains). */
+export function isAllowedDomain(url, customAllowed = []) {
+  try {
+    const hostname = new URL(url, location.href).hostname.toLowerCase();
+    const all = customAllowed.length > 0
+      ? ZEST_ALLOWED_DOMAINS.concat(customAllowed)
+      : ZEST_ALLOWED_DOMAINS;
+    return all.some((d) => {
+      const domain = d.toLowerCase();
+      return hostname === domain || hostname.endsWith('.' + domain);
+    });
+  } catch (e) {
+    return false;
+  }
+}
+
 /**
  * Check if URL is third-party (different domain)
  */

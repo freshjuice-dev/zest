@@ -255,7 +255,7 @@ Zest.on(Zest.EVENTS.CHANGE, (e) => {
 
 What headless gives you:
 - All interceptors (cookies, storage, scripts) still work — just skip the built-in UI
-- Same config surface (`mode`, `respectDNT`, `consentModeGoogle`, `blockedDomains`, `patterns`, etc.)
+- Same config surface (`mode`, `respectDNT`, `consentModeGoogle`, `blockedDomains`, `allowedDomains`, `patterns`, etc.)
 - **Does NOT auto-init** — you call `Zest.init()` when ready
 - **Does NOT set `window.Zest`** — you import and use the module directly
 
@@ -411,6 +411,20 @@ window.ZestConfig = {
     'custom-tracker.com',
     { domain: 'another-tracker.com', category: 'analytics' }
   ]
+};
+```
+
+### Custom Allowed Domains
+
+Domains in `allowedDomains` pass through all blocking — mode-based lists,
+`blockedDomains`, and doomsday third-party blocking. Subdomains are included
+(`'example.com'` matches `'api.example.com'`). `cookiezest.com` is always
+allowed and does not need to be listed.
+
+```javascript
+window.ZestConfig = {
+  mode: 'doomsday',
+  allowedDomains: ['my-cdn.com', 'trusted-analytics.com']
 };
 ```
 

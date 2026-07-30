@@ -133,6 +133,9 @@ export const DEFAULTS = {
   // Custom domains to block (in addition to mode-based blocking)
   blockedDomains: [], // days
 
+  // Custom domains to allow through all blocking (overrides mode + blockedDomains).
+  allowedDomains: [],
+
   // Links
   policyUrl: null,
   imprintUrl: null,
@@ -282,7 +285,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'allowedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];

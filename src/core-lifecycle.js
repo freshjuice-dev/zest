@@ -120,11 +120,11 @@ export function coreInit(userConfig = {}) {
     // we drop the URL before the browser fetches. The MutationObserver
     // inside startScriptBlocking remains as a defence-in-depth net for
     // anything that slips past (e.g. nodes constructed via cloneNode).
-    interceptElements(currentConfig.mode, currentConfig.blockedDomains);
-    startScriptBlocking(currentConfig.mode, currentConfig.blockedDomains);
+    interceptElements(currentConfig.mode, currentConfig.blockedDomains, currentConfig.allowedDomains);
+    startScriptBlocking(currentConfig.mode, currentConfig.blockedDomains, currentConfig.allowedDomains);
   }
   if (intercept.network !== false) {
-    interceptNetwork(currentConfig.mode, currentConfig.blockedDomains);
+    interceptNetwork(currentConfig.mode, currentConfig.blockedDomains, currentConfig.allowedDomains);
   }
 
   const consent = loadConsent();

@@ -136,6 +136,15 @@
       "default": [],
       "description": "Custom domains to block in addition to mode-based blocking"
     },
+    "allowedDomains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Domain to allow through all blocking (subdomains included)"
+      },
+      "default": [],
+      "description": "Custom domains to allow through all blocking. Overrides mode, blockedDomains, and doomsday third-party blocking. cookiezest.com is always allowed."
+    },
     "labels": {
       "type": "object",
       "description": "UI text labels for localization",
