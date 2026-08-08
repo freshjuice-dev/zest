@@ -1,5 +1,6 @@
 # Zest 🍋
 
+> ⚠️ PRIVATE REPOSITORY — Proprietary and confidential. See [LICENSE](LICENSE).
 [![npm](https://img.shields.io/npm/v/@freshjuice/zest)](https://www.npmjs.com/package/@freshjuice/zest)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/freshjuice-dev/zest)](https://github.com/freshjuice-dev/zest/stargazers)
