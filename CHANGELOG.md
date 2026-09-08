@@ -11,9 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **`npm run lint` now passes.** Added a flat `eslint.config.js` (ESLint v9+
   requires it; the repo had none). Fixes [#16](https://github.com/freshjuice-dev/zest/issues/16).
-
-### Fixed
-
 - **`data-mode` is now actually parsed.** The docs have shown
   `data-mode="safe"` on the script tag since v2.4, but the parser never read
   it — users setting it got the default silently. Invalid values now fall
