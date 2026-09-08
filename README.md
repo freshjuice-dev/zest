@@ -162,6 +162,7 @@ window.ZestConfig = {
   data-accent="#0071e3"
   data-policy-url="/privacy"
   data-geo="on"
+  data-mode="safe"
   data-branding="false"
   data-hide-categories="analytics,functional"
   data-backdrop-blur="8"
@@ -183,6 +184,9 @@ window.ZestConfig = {
 > `data-hard-wall="on"` blocks page interaction until the visitor accepts
 > or rejects consent, ensuring provable awareness.
 
+> `data-mode` sets the blocking mode: `safe` (default), `strict`,
+> `manual`, or `doomsday`. Unknown values fall back to `safe`.
+
 ## API
 
 ```javascript
@@ -202,14 +206,14 @@ Zest.getConsentProof()         // full consent cookie payload (compliance audit)
 // Programmatic actions
 Zest.acceptAll()
 Zest.rejectAll()
-Zest.updateConsent({ analytics: true, marketing: false })  // headless only
+Zest.updateConsent({ analytics: true, marketing: false })
 
 // DNT / GPC
 Zest.isDoNotTrackEnabled()
 Zest.getDNTDetails()           // { enabled, source: 'dnt'|'gpc'|null }
 
 // Geo / jurisdiction (when `geo` is configured — see below)
-Zest.resolveGeo()              // headless: await { action, verdict }
+Zest.resolveGeo()              // await { action, verdict } (when `geo` is configured)
 
 // Events — subscribe helpers (also work with addEventListener)
 Zest.on('zest:change', (e) => {})
