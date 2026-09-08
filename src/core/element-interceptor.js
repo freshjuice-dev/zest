@@ -171,7 +171,7 @@ function patchUrlSetter(ProtoCtor, prop) {
           return;
         }
       }
-      return desc.set.call(this, value);
+      desc.set.call(this, value);
     }
   });
 

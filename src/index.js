@@ -34,9 +34,9 @@ import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
 import { getConfig, getCurrentConfig } from './config/parser.js';
 
 // UI
-import { showBanner, hideBanner, isBannerVisible } from './ui/banner.js';
-import { showModal, hideModal, isModalVisible } from './ui/modal.js';
-import { showWidget, hideWidget, removeWidget, isWidgetVisible } from './ui/widget.js';
+import { showBanner, hideBanner } from './ui/banner.js';
+import { showModal, hideModal } from './ui/modal.js';
+import { showWidget, hideWidget, removeWidget } from './ui/widget.js';
 import { showNotice, hideNotice, removeNotice } from './ui/notice.js';
 
 /**
@@ -306,6 +306,12 @@ const Zest = {
     }
     handleRejectAll();
   },
+
+  updateConsent(selections) {
+    coreUpdateConsent(selections);
+  },
+
+  resolveGeo: coreResolveGeo,
 
   // Reset everything and reshow the banner
   reset() {

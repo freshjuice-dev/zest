@@ -159,7 +159,7 @@ export async function resolveGeoAction(geo) {
   const fallback = normalizeAction(geo.fallback, 'consent');
   const timeoutMs = geo.timeout || 1500;
 
-  let verdict = null;
+  let verdict;
   try {
     // Backstop timeout: fetchVerdict aborts its own request at `timeoutMs`,
     // but a hung consumer resolver() needs an outer guard too.

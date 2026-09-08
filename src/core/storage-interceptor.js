@@ -65,7 +65,7 @@ export function clearStorageQueues() {
 /**
  * Create a proxy for storage API
  */
-function createStorageProxy(storage, queue, storageName) {
+function createStorageProxy(storage, queue) {
   return new Proxy(storage, {
     get(target, prop) {
       if (prop === 'setItem') {
@@ -130,13 +130,13 @@ export function interceptStorage() {
     originalSessionStorage = window.sessionStorage;
 
     Object.defineProperty(window, 'localStorage', {
-      value: createStorageProxy(originalLocalStorage, localStorageQueue, 'localStorage'),
+      value: createStorageProxy(originalLocalStorage, localStorageQueue),
       configurable: true,
       writable: false
     });
 
     Object.defineProperty(window, 'sessionStorage', {
-      value: createStorageProxy(originalSessionStorage, sessionStorageQueue, 'sessionStorage'),
+      value: createStorageProxy(originalSessionStorage, sessionStorageQueue),
       configurable: true,
       writable: false
     });
