@@ -362,7 +362,7 @@ if (typeof window !== 'undefined') {
   // calls before our interceptors are in place.
   const cfg = getConfig();
   if (cfg.autoInit !== false) {
-    init(window.ZestConfig);
+    init(cfg);
   }
 }
 

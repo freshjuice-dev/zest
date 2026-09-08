@@ -238,6 +238,17 @@ export function normalizeButtonLayout(value) {
 }
 
 /**
+ * Normalise a `mode` config value. Unknown values fall back to 'safe'.
+ */
+export function normalizeMode(value) {
+  if (typeof value === 'string') {
+    const v = value.trim().toLowerCase();
+    if (v === 'manual' || v === 'safe' || v === 'strict' || v === 'doomsday') return v;
+  }
+  return 'safe';
+}
+
+/**
  * Validate and normalise the opt-in `geo` config block. Unknown / unsafe
  * values are dropped; `endpoint` must be an http(s) URL. Returns null when no
  * usable source is present.
@@ -285,7 +296,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'mode', 'blockedDomains', 'allowedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'blockedDomains', 'allowedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
@@ -309,6 +320,10 @@ export function mergeConfig(userConfig) {
   // fall back to 'row' rather than silently switching to split.
   if (userConfig.buttonLayout !== undefined) {
     config.buttonLayout = normalizeButtonLayout(userConfig.buttonLayout);
+  }
+
+  if (userConfig.mode !== undefined) {
+    config.mode = normalizeMode(userConfig.mode);
   }
 
   // Detect language and get translations

@@ -84,6 +84,10 @@ function parseDataAttributes() {
   const expiration = script.getAttribute('data-expiration');
   if (expiration) config.expiration = parseInt(expiration, 10);
 
+  // Blocking mode
+  const mode = script.getAttribute('data-mode');
+  if (mode) config.mode = mode;
+
   // Consent mode integrations
   const consentModeGoogle = script.getAttribute('data-consent-mode-google');
   if (consentModeGoogle !== null) config.consentModeGoogle = consentModeGoogle !== 'false';
