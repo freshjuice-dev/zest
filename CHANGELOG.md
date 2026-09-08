@@ -5,6 +5,26 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **`npm run lint` now passes.** Added a flat `eslint.config.js` (ESLint v9+
+  requires it; the repo had none). Fixes [#16](https://github.com/freshjuice-dev/zest/issues/16).
+
+### Removed
+
+- **Dead `src/api/public-api.js` module.** Never imported anywhere — the
+  public API lives inline in `src/index.js`. Also dropped unused imports and
+  an unused `storageName` parameter flagged by the new lint pass.
+
+### Changed
+
+- Dev deps to latest: eslint 10.10.0, rollup 4.63.1, vitest 5.0.0 (with
+  explicit `vite` dev dep), plus a lockfile refresh pulling the workspace
+  plugin lockpins of `@freshjuice/zest` from 2.4.1 to 2.7.0. Dependabot now
+  covers `/packages/zest-astro` and `/packages/zest-eleventy` too.
+
 ## [2.7.0] - 2026-07-30
 
 ### Added

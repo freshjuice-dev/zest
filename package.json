@@ -79,10 +79,12 @@
     "url": "https://github.com/freshjuice-dev/zest/issues"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-terser": "^1.0.0",
-    "eslint": "^10.6.0",
-    "rollup": "^4.62.2",
-    "vitest": "^4.1.10"
+    "eslint": "^10.10.0",
+    "rollup": "^4.63.1",
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
   }
 }
