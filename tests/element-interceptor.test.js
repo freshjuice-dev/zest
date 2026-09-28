@@ -6,8 +6,10 @@ import {
   interceptElements,
   replayElements,
   restoreElements,
-  setConsentChecker
+  setConsentChecker,
+  setBlockedEmbedWriteHandler
 } from '../src/core/element-interceptor.js';
+import { activateEmbed, getEmbedQueue, restoreEmbedBlocking, startEmbedBlocking } from '../src/core/embed-blocker.js';
 
 class FakeElement {
   constructor(tagName = 'div') {
@@ -46,16 +48,43 @@ class FakeImageElement extends FakeElement {
   }
 }
 
+class FakeIFrameElement extends FakeImageElement {
+  constructor() {
+    super();
+    this.tagName = 'IFRAME';
+  }
+  get src() { return super.src; }
+  set src(value) { super.src = value; }
+  hasAttribute(name) { return this.attributes.has(name); }
+}
+
 function installFakeDom() {
   globalThis.window = globalThis;
   globalThis.location = { href: 'https://example.com/page' };
   globalThis.Element = FakeElement;
   globalThis.HTMLImageElement = FakeImageElement;
+  globalThis.HTMLIFrameElement = FakeIFrameElement;
   globalThis.Image = FakeImageElement;
+  globalThis.document = {
+    querySelectorAll: () => [],
+    documentElement: {},
+    dispatchEvent: () => true
+  };
+  globalThis.CustomEvent = class {
+    constructor(type, options) { this.type = type; this.detail = options.detail; }
+  };
+  globalThis.MutationObserver = class {
+    observe() {}
+    disconnect() {}
+  };
 }
 
 function teardownFakeDom() {
+  delete globalThis.document;
+  delete globalThis.CustomEvent;
+  delete globalThis.MutationObserver;
   delete globalThis.Image;
+  delete globalThis.HTMLIFrameElement;
   delete globalThis.HTMLImageElement;
   delete globalThis.Element;
   delete globalThis.location;
@@ -72,7 +101,9 @@ describe('element interceptor image coverage', () => {
   });
 
   afterEach(() => {
+    restoreEmbedBlocking();
     restoreElements();
+    setBlockedEmbedWriteHandler(null);
     clearElementQueue();
     teardownFakeDom();
   });
@@ -107,6 +138,53 @@ describe('element interceptor image coverage', () => {
       method: 'attribute',
       value: blockedUrl
     });
+  });
+
+  it('honors iframe opt-out for both URL write paths', () => {
+    interceptElements('doomsday');
+    const frame = new HTMLIFrameElement();
+    frame.setAttribute('data-zest-allow', '');
+    frame.src = 'https://www.youtube.com/embed/a';
+    expect(frame.src).toContain('/a');
+    frame.setAttribute('src', 'https://www.youtube.com/embed/b');
+    expect(frame.src).toContain('/b');
+    expect(getElementQueue()).toHaveLength(0);
+  });
+
+  it('swallows blocked iframe URL changes before fetching', () => {
+    interceptElements('safe');
+    const writes = [];
+    setBlockedEmbedWriteHandler((el, url) => { writes.push([el, url]); return true; });
+    const frame = new HTMLIFrameElement();
+    frame.src = 'https://www.youtube.com/embed/a';
+    frame.setAttribute('src', 'https://www.youtube.com/embed/b');
+    expect(frame.src).toBe('');
+    expect(writes.map(([, url]) => url)).toEqual([
+      'https://www.youtube.com/embed/a', 'https://www.youtube.com/embed/b'
+    ]);
+    expect(getElementQueue()).toHaveLength(0);
+    const image = new HTMLImageElement();
+    image.src = 'https://example.com/img';
+    expect(writes).toHaveLength(2);
+    frame.setAttribute('data-zest-allow', '');
+    frame.src = 'https://www.youtube.com/embed/c';
+    expect(frame.src).toContain('/c');
+    expect(writes).toHaveLength(2);
+  });
+
+  it('routes dynamic iframe writes through embed gating before fetch', () => {
+    interceptElements('safe');
+    startEmbedBlocking('safe');
+    const frame = new HTMLIFrameElement();
+    frame.src = 'https://www.youtube.com/embed/a';
+    expect(frame.src).toBe('');
+    expect(getEmbedQueue()[0].url).toBe('https://www.youtube.com/embed/a');
+    frame.setAttribute('src', 'https://www.youtube.com/embed/b');
+    expect(frame.src).toBe('');
+    expect(getEmbedQueue()[0].url).toBe('https://www.youtube.com/embed/b');
+    expect(getElementQueue()).toHaveLength(0);
+    activateEmbed(frame);
+    expect(frame.src).toBe('https://www.youtube-nocookie.com/embed/b');
   });
 
   it('replays blocked image URLs after consent is granted', () => {

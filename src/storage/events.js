@@ -10,7 +10,8 @@ export const EVENTS = {
   CHANGE: 'zest:change',
   SHOW: 'zest:show',
   HIDE: 'zest:hide',
-  GEO: 'zest:geo'
+  GEO: 'zest:geo',
+  EMBED: 'zest:embed'
 };
 
 /**
@@ -76,6 +77,14 @@ export function emitHide(type = 'banner') {
  */
 export function emitGeo(action, verdict) {
   return emit(EVENTS.GEO, { action, verdict });
+}
+
+/**
+ * Emit embed event. `phase` is 'blocked' (an iframe was gated behind the
+ * consent overlay) or 'activated' (its content was released).
+ */
+export function emitEmbed(phase, detail) {
+  return emit(EVENTS.EMBED, { phase, ...detail });
 }
 
 /**

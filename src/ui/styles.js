@@ -679,7 +679,7 @@ ${customCss}
  * (pre-April 2026 Baseline). Uses WCAG 2.x relative luminance to pick black
  * or white. Browsers that support contrast-color() override this via @supports.
  */
-function contrastColor(hex) {
+export function contrastColor(hex) {
   if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{3,8}$/.test(hex.trim())) {
     return '#ffffff';
   }

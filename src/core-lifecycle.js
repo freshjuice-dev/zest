@@ -13,6 +13,7 @@ import { interceptStorage, setConsentChecker as setStorageChecker, replayStorage
 import { startScriptBlocking, setConsentChecker as setScriptChecker, replayScripts } from './core/script-blocker.js';
 import { interceptNetwork, setConsentChecker as setNetworkChecker } from './core/network-interceptor.js';
 import { interceptElements, setConsentChecker as setElementChecker, replayElements } from './core/element-interceptor.js';
+import { startEmbedBlocking, setConsentChecker as setEmbedChecker, syncEmbeds } from './core/embed-blocker.js';
 import { setPatterns, appendPatternsToCategory } from './core/pattern-matcher.js';
 import { getCategoryIds, getHiddenCategoryIds } from './core/categories.js';
 import { isDoNotTrackEnabled } from './core/dnt.js';
@@ -106,11 +107,12 @@ export function coreInit(userConfig = {}) {
   setScriptChecker(checkConsent);
   setNetworkChecker(checkConsent);
   setElementChecker(checkConsent);
+  setEmbedChecker(checkConsent);
 
   // Interceptor toggles. By default everything is intercepted (back-compat
   // with v2.0 / v2.1). Consumers that gate scripts and storage themselves
   // can opt out per channel via `intercept: { storage: false, … }`.
-  const intercept = currentConfig.intercept || { cookies: true, storage: true, scripts: true, network: true };
+  const intercept = currentConfig.intercept || { cookies: true, storage: true, scripts: true, network: true, embeds: true };
   if (intercept.cookies !== false) interceptCookies();
   if (intercept.storage !== false) interceptStorage();
   if (intercept.scripts !== false) {
@@ -125,6 +127,18 @@ export function coreInit(userConfig = {}) {
   }
   if (intercept.network !== false) {
     interceptNetwork(currentConfig.mode, currentConfig.blockedDomains, currentConfig.allowedDomains);
+  }
+
+  // Embed gating (third-party iframes): scan + overlay + MutationObserver.
+  // Own toggle so consumers can disable the iframe layer independently of
+  // script blocking, mirroring the other interceptor channels.
+  if (intercept.embeds !== false) {
+    startEmbedBlocking(
+      currentConfig.mode,
+      currentConfig.blockedDomains,
+      currentConfig.allowedDomains,
+      currentConfig.privacyRewrite !== false
+    );
   }
 
   const consent = loadConsent();
@@ -211,6 +225,7 @@ export function coreAcceptAll() {
   const result = storeAcceptAll(currentConfig.expiration);
   applyConsentSignals(result.current, currentConfig, false);
   replayAll(getCategoryIds());
+  syncEmbeds(result.current);
   emitConsent(result.current, result.previous);
   emitChange(result.current, result.previous);
   safeInvoke(currentConfig.callbacks?.onAccept, result.current);
@@ -225,6 +240,7 @@ export function coreRejectAll() {
   if (!initialized) return null;
   const result = storeRejectAll(currentConfig.expiration);
   applyConsentSignals(result.current, currentConfig, false);
+  syncEmbeds(result.current);
   emitReject(result.current);
   emitChange(result.current, result.previous);
   safeInvoke(currentConfig.callbacks?.onReject);
@@ -246,6 +262,7 @@ export function coreUpdateConsent(selections) {
   if (newlyAllowed.length > 0) {
     replayAll(newlyAllowed);
   }
+  syncEmbeds(result.current);
 
   const hasNonEssential = Object.entries(result.current).some(
     ([cat, val]) => cat !== 'essential' && val
@@ -265,6 +282,10 @@ export function coreUpdateConsent(selections) {
  */
 export function coreReset() {
   resetConsent();
+  // Re-gate embeds against the fresh (empty) consent state — previously
+  // activated iframes must not keep playing after a reset. loadConsent()
+  // applies the hidden-category override exactly as a first visit would.
+  syncEmbeds(loadConsent());
 }
 
 export function isInitialized() {

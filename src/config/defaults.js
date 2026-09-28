@@ -48,6 +48,11 @@ export const DEFAULTS = {
       title: 'Your Privacy Choices',
       optOut: 'Do Not Sell or Share My Personal Information',
       dismiss: 'Dismiss'
+    },
+    embed: {
+      title: 'External content is blocked',
+      text: 'Content in the %category% category does not load until you consent.',
+      load: 'Load content'
     }
   },
 
@@ -103,6 +108,10 @@ export const DEFAULTS = {
   // Blocking mode: 'manual' | 'safe' | 'strict' | 'doomsday'
   mode: 'safe',
 
+  // Rewrite gated embed URLs to their privacy variant on activation:
+  // youtube.com/embed/* -> youtube-nocookie.com, Vimeo players get dnt=1.
+  privacyRewrite: true,
+
   // Interceptor toggles. By default Zest installs cookie + storage
   // interceptors that route writes through the consent layer. Consumers
   // who manage gating themselves (typically headless mode with custom
@@ -111,7 +120,8 @@ export const DEFAULTS = {
     cookies: true,
     storage: true,
     scripts: true,
-    network: true
+    network: true,
+    embeds: true
   },
 
   // Strictly-necessary declarations. Both fields *append* to whatever
@@ -296,7 +306,7 @@ export function mergeConfig(userConfig) {
   }
 
   // Simple properties
-  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'blockedDomains', 'allowedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout'];
+  const simpleKeys = ['lang', 'position', 'theme', 'accentColor', 'autoInit', 'showWidget', 'expiration', 'policyUrl', 'imprintUrl', 'customStyles', 'blockedDomains', 'allowedDomains', 'respectDNT', 'dntBehavior', 'consentModeGoogle', 'consentModeMicrosoft', 'backdropBlur', 'hardWall', 'buttonLayout', 'privacyRewrite'];
   for (const key of simpleKeys) {
     if (userConfig[key] !== undefined) {
       config[key] = userConfig[key];
@@ -354,6 +364,11 @@ export function mergeConfig(userConfig) {
       ...DEFAULTS.labels.notice,
       ...translationLabels.notice,
       ...userLabels.notice
+    },
+    embed: {
+      ...DEFAULTS.labels.embed,
+      ...translationLabels.embed,
+      ...userLabels.embed
     }
   };
 

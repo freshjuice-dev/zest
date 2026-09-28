@@ -38,6 +38,12 @@ export type ConsentState =
   & Partial<Record<ConsentCategory, boolean>>
   & { essential: true };
 
+/** Result of a consent write (acceptAll / rejectAll / updateConsent). */
+export interface ConsentUpdateResult {
+  current: ConsentState;
+  previous: ConsentState;
+}
+
 /** Snapshot returned by `init()`. */
 export interface InitSnapshot {
   consent: ConsentState;
@@ -136,6 +142,14 @@ export type ZestTheme = 'light' | 'dark' | 'auto';
 export type ZestMode = 'manual' | 'safe' | 'strict' | 'doomsday';
 
 /**
+ * Rewrite activated embed URLs to their privacy variant:
+ * `youtube.com/embed/*` → `youtube-nocookie.com` (official privacy-enhanced
+ * mode), Vimeo players get `dnt=1`. Default `true`. Also accepted via
+ * `data-privacy-rewrite`.
+ */
+export type PrivacyRewriteConfig = boolean;
+
+/**
  * Optional consumer callbacks. Each is wrapped in a try/catch internally
  * so a thrown error never breaks the consent pipeline.
  */
@@ -171,6 +185,13 @@ export interface InterceptToggles {
    * the runtime beacon is third-party.
    */
   network?: boolean;
+  /**
+   * Third-party `<iframe>` embed gating (YouTube, Vimeo, social widgets).
+   * Blocked embeds show a consent overlay; the iframe src is swapped to
+   * `about:blank` until the category is allowed. Default `true`. Also
+   * accepted via `data-intercept-embeds`.
+   */
+  embeds?: boolean;
 }
 
 /** Per-category configuration overrides. */
@@ -247,6 +268,12 @@ export interface InitOptions {
   expiration?: number;
   /** Script-blocking mode. Default `'safe'`. */
   mode?: ZestMode;
+  /**
+   * Rewrite activated embed URLs to their privacy variant (YouTube →
+   * youtube-nocookie.com, Vimeo → dnt=1). Default `true`. Also accepted
+   * via `data-privacy-rewrite`.
+   */
+  privacyRewrite?: PrivacyRewriteConfig;
   /** Auto-initialise on script load. Default `true` for the UI build. */
   autoInit?: boolean;
   /** Respect Do Not Track / Global Privacy Control. Default `true`. */
@@ -255,8 +282,18 @@ export interface InitOptions {
   dntBehavior?: DNTBehavior;
   /** Disable individual interceptors. Default: all on. */
   intercept?: InterceptToggles;
-  /**
-   * Per-category overrides. Set `hidden: true` to remove a category from
+  /** Labels for the full-build UI. */
+  labels?: {
+    /** `%category%` in `text` is replaced with the localized category label. */
+    embed?: {
+      title?: string;
+      text?: string;
+      load?: string;
+    };
+    [key: string]: unknown;
+  };
+
+  /** Per-category overrides. Set `hidden: true` to remove a category from
    * the settings modal. Hidden categories are forced to false (rejected)
    * in the consent state — a visitor can never accept a toggle they cannot
    * see. Essential cannot be hidden.
@@ -304,6 +341,7 @@ export interface ZestEvents {
   SHOW: 'zest:show';
   HIDE: 'zest:hide';
   GEO: 'zest:geo';
+  EMBED: 'zest:embed';
 }
 
 export type ZestEventName = ZestEvents[keyof ZestEvents];
@@ -314,7 +352,17 @@ export interface ZestEventDetail {
   previous?: ConsentState;
 }
 
+export interface ZestEmbedEventDetail {
+  phase: 'blocked' | 'activated';
+  element: HTMLIFrameElement;
+  category: ConsentCategory;
+  url: string;
+}
+
 declare const Zest: {
+  /** Version of the running script (from package.json, injected at build). */
+  version: string;
+
   /** Initialise. Auto-called when the script loads unless `autoInit: false`. */
   init(options?: InitOptions): InitSnapshot;
 
@@ -330,12 +378,6 @@ declare const Zest: {
   /** Close the settings modal. */
   hideSettings(): void;
 
-  /** Show the persistent "manage cookies" widget. */
-  showWidget(): void;
-
-  /** Hide the widget without removing it. */
-  hideWidget(): void;
-
   /** Current consent state (clone, safe to mutate). */
   getConsent(): ConsentState;
 
@@ -349,13 +391,21 @@ declare const Zest: {
   getConsentProof(): ConsentProof | null;
 
   /** Grant consent for every category and run accept callbacks. */
-  acceptAll(): void;
+  acceptAll(): ConsentUpdateResult | null;
 
   /** Revoke consent for every non-essential category and run reject callbacks. */
-  rejectAll(): void;
+  rejectAll(): ConsentUpdateResult | null;
 
-  /** Wipe all consent state and reshow the banner. */
+  /** Wipe all consent state and re-show the banner. */
   reset(): void;
+
+  /** Programmatically update consent selections (same as the modal save). */
+  updateConsent(
+    selections: Partial<Record<ConsentCategory, boolean>>
+  ): ConsentUpdateResult | null;
+
+  /** Manually resolve the visitor's jurisdiction (geo gating). */
+  resolveGeo(): Promise<{ action: GeoAction; verdict: GeoVerdict | null } | null>;
 
   /** True if the browser is sending DNT or GPC. */
   isDoNotTrackEnabled(): boolean;
@@ -363,17 +413,20 @@ declare const Zest: {
   /** Why `isDoNotTrackEnabled()` returned what it did. */
   getDNTDetails(): DNTDetails;
 
+  /**
+   * Activate a single gated embed (one-time load — no consent is recorded).
+   * Pass the `<iframe>` element or its index in the embed queue. Returns
+   * `true` when an embed was activated.
+   */
+  activateEmbed(elementOrIndex: HTMLIFrameElement | number): boolean;
+
   /** Subscribe to a consent event. Returns an unsubscribe function. */
-  on(
-    eventName: ZestEventName,
-    handler: (event: CustomEvent<ZestEventDetail>) => void
-  ): () => void;
+  on(eventName: 'zest:embed', handler: (event: CustomEvent<ZestEmbedEventDetail>) => void): () => void;
+  on(eventName: Exclude<ZestEventName, 'zest:embed'>, handler: (event: CustomEvent<ZestEventDetail>) => void): () => void;
 
   /** Subscribe once; auto-unsubscribes after the first call. */
-  once(
-    eventName: ZestEventName,
-    handler: (event: CustomEvent<ZestEventDetail>) => void
-  ): () => void;
+  once(eventName: 'zest:embed', handler: (event: CustomEvent<ZestEmbedEventDetail>) => void): () => void;
+  once(eventName: Exclude<ZestEventName, 'zest:embed'>, handler: (event: CustomEvent<ZestEventDetail>) => void): () => void;
 
   /** Constants for `on()` / `once()`. */
   EVENTS: ZestEvents;

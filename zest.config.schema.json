@@ -46,6 +46,11 @@
       "default": "safe",
       "description": "Script blocking mode"
     },
+    "privacyRewrite": {
+      "type": "boolean",
+      "default": true,
+      "description": "Rewrite gated embed URLs to their privacy variant when activated: youtube.com/embed/* is served from youtube-nocookie.com (official privacy-enhanced mode) and Vimeo players get dnt=1."
+    },
     "autoInit": {
       "type": "boolean",
       "default": true,
@@ -207,6 +212,24 @@
               "default": "Cookie Settings"
             }
           }
+        },
+        "embed": {
+          "type": "object",
+          "description": "Labels for the embed consent overlay",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": "External content is blocked"
+            },
+            "text": {
+              "type": "string",
+              "default": "Content in the %category% category does not load until you consent."
+            },
+            "load": {
+              "type": "string",
+              "default": "Load content"
+            }
+          }
         }
       }
     },
@@ -273,6 +296,11 @@
           "type": "boolean",
           "default": true,
           "description": "Intercept fetch / XMLHttpRequest / navigator.sendBeacon calls. Catches trackers that ship via CMS first-party proxies (HubSpot, Cloudflare Zaraz, server-side GTM) where the <script> tag is same-origin but the runtime beacon is third-party."
+        },
+        "embeds": {
+          "type": "boolean",
+          "default": true,
+          "description": "Gate third-party <iframe> embeds (YouTube, Vimeo, social widgets) behind a consent overlay until their category is allowed. Static iframes are swapped to about:blank on first scan; embeds authored with data-consent-src never fetch at all."
         }
       }
     },

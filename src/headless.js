@@ -48,6 +48,9 @@ import {
 import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
 
 import { EVENTS, on, once } from './storage/events.js';
+import { VERSION } from './version.js';
+
+import { activateEmbed as coreActivateEmbed, getEmbedQueue } from './core/embed-blocker.js';
 
 function init(userConfig = {}) {
   const snapshot = coreInit(userConfig);
@@ -106,7 +109,17 @@ function reset() {
   coreReset();
 }
 
+function activateEmbed(elementOrIndex) {
+  if (typeof elementOrIndex === 'number') {
+    const queue = getEmbedQueue();
+    return coreActivateEmbed(queue[elementOrIndex]?.element);
+  }
+  return coreActivateEmbed(elementOrIndex);
+}
+
 const Zest = {
+  version: VERSION,
+
   init,
 
   // Consent state
@@ -127,6 +140,9 @@ const Zest = {
   // DNT introspection
   isDoNotTrackEnabled,
   getDNTDetails,
+
+  // Embeds: activate a single gated iframe (one-time load, no consent write).
+  activateEmbed,
 
   // Events
   on,
@@ -153,6 +169,7 @@ export {
   getConsentProof,
   isDoNotTrackEnabled,
   getDNTDetails,
+  activateEmbed,
   on,
   once,
   EVENTS,

@@ -26,6 +26,7 @@ import {
   getConsentProof
 } from './storage/consent-store.js';
 import { emitShow, emitHide, EVENTS, on, once } from './storage/events.js';
+import { VERSION } from './version.js';
 
 // DNT introspection
 import { isDoNotTrackEnabled, getDNTDetails } from './core/dnt.js';
@@ -38,12 +39,14 @@ import { showBanner, hideBanner } from './ui/banner.js';
 import { showModal, hideModal } from './ui/modal.js';
 import { showWidget, hideWidget, removeWidget } from './ui/widget.js';
 import { showNotice, hideNotice, removeNotice } from './ui/notice.js';
+import { setEmbedOverlayConfig, createEmbedOverlay } from './ui/embed-overlay.js';
+import { activateEmbed, setEmbedRenderer, getEmbedQueue, syncEmbeds } from './core/embed-blocker.js';
 
 /**
  * Handle accept all — delegates consent logic to core, handles UI swap.
  */
 function handleAcceptAll() {
-  coreAcceptAll();
+  const result = coreAcceptAll();
   const config = getActiveConfig();
 
   hideBanner();
@@ -52,13 +55,15 @@ function handleAcceptAll() {
   if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
+
+  return result;
 }
 
 /**
  * Handle reject all.
  */
 function handleRejectAll() {
-  coreRejectAll();
+  const result = coreRejectAll();
   const config = getActiveConfig();
 
   hideBanner();
@@ -67,6 +72,8 @@ function handleRejectAll() {
   if (config?.showWidget) {
     showWidget({ onClick: handleShowSettings });
   }
+
+  return result;
 }
 
 /**
@@ -208,6 +215,14 @@ function mountUIForAction(action) {
 }
 
 /**
+ * Adapter between the embed blocker's renderer contract (entry, onLoad) =>
+ * hideOverlay callback, and the overlay UI module.
+ */
+function createEmbedOverlayAdapter(entry, onLoad) {
+  return createEmbedOverlay(entry, onLoad);
+}
+
+/**
  * Initialize Zest with UI.
  *
  * Splits into two phases:
@@ -226,6 +241,16 @@ function mountUIForAction(action) {
 function init(userConfig = {}) {
   const snapshot = coreInit(userConfig);
 
+  // Register the overlay renderer for the embed blocker (full build only),
+  // then backfill overlays for embeds the initial scan (inside coreInit)
+  // blocked before the renderer existed.
+  const config = getActiveConfig();
+  if (config?.intercept?.embeds !== false) {
+    setEmbedOverlayConfig(config.labels?.embed, config.accentColor, config.customStyles, config.categories);
+    setEmbedRenderer(createEmbedOverlayAdapter);
+    syncEmbeds(getConsent());
+  }
+
   if (snapshot.geoPending) {
     // Geo gating is on and no decision exists yet. Hold the UI until the
     // jurisdiction verdict lands, THEN mount the right experience. Interceptors
@@ -243,6 +268,8 @@ function init(userConfig = {}) {
 }
 
 const Zest = {
+  version: VERSION,
+
   init,
 
   // Banner control
@@ -290,25 +317,38 @@ const Zest = {
   isDoNotTrackEnabled,
   getDNTDetails,
 
+  // Embeds
+  /**
+   * Activate a single gated embed (one-time load, records no consent).
+   * Pass the <iframe> element or its index in the embed queue.
+   */
+  activateEmbed(elementOrIndex) {
+    if (typeof elementOrIndex === 'number') {
+      const queue = getEmbedQueue();
+      return activateEmbed(queue[elementOrIndex]?.element);
+    }
+    return activateEmbed(elementOrIndex);
+  },
+
   // Programmatic accept / reject
   acceptAll() {
     if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
-      return;
+      return null;
     }
-    handleAcceptAll();
+    return handleAcceptAll();
   },
 
   rejectAll() {
     if (!isInitialized()) {
       console.warn('[Zest] Not initialized. Call Zest.init() first.');
-      return;
+      return null;
     }
-    handleRejectAll();
+    return handleRejectAll();
   },
 
   updateConsent(selections) {
-    coreUpdateConsent(selections);
+    return coreUpdateConsent(selections);
   },
 
   resolveGeo: coreResolveGeo,

@@ -51,6 +51,15 @@ let customBlockedDomains = [];
 let customAllowedDomains = [];
 let installed = false;
 let checkConsent = () => false;
+let handleBlockedEmbedWrite = null;
+
+export function setBlockedEmbedWriteHandler(fn) {
+  handleBlockedEmbedWrite = fn;
+}
+
+function handledEmbedWrite(element, value) {
+  return element.tagName === 'IFRAME' && handleBlockedEmbedWrite?.(element, value) === true;
+}
 
 // Saved originals for restoration in tests / headless teardown.
 const originals = {
@@ -152,6 +161,11 @@ function patchUrlSetter(ProtoCtor, prop) {
     get: desc.get,
     set(value) {
       if (typeof value === 'string') {
+        if (this.tagName === 'IFRAME' && this.hasAttribute('data-zest-allow')) {
+          desc.set.call(this, value);
+          return;
+        }
+        if (handledEmbedWrite(this, value)) return;
         const category = shouldBlock(value);
         if (category) {
           // Don't pass through to the original setter — the URL never
@@ -198,6 +212,8 @@ function patchSetAttribute() {
     if (attr !== watched) {
       return orig.call(this, name, value);
     }
+    if (tag === 'iframe' && this.hasAttribute('data-zest-allow')) return orig.call(this, name, value);
+    if (handledEmbedWrite(this, value)) return;
     const category = shouldBlock(value);
     if (category) {
       // Drop silently and queue for replay. The element keeps any
@@ -373,4 +389,18 @@ export function restoreElements() {
 
 export function isInstalled() {
   return installed;
+}
+
+/**
+ * Internal: bypass the element interceptor for one URL write (embed
+ * blocker's about:blank swap + activation). The patched setter / setAttribute
+ * would re-categorize and re-queue these writes.
+ */
+export function writeElementUrl(element, attr, value) {
+  const orig = originals.setAttribute;
+  if (orig) {
+    orig.call(element, attr, value);
+  } else {
+    element.setAttribute(attr, value);
+  }
 }

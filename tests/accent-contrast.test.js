@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateStyles } from '../src/ui/styles.js';
+import { overlayStyles } from '../src/ui/embed-overlay.js';
 
 describe('--zest-accent-text hybrid (JS fallback + @supports)', () => {
   function getAccentTextLine(css) {
@@ -77,5 +78,13 @@ describe('--zest-accent-text hybrid (JS fallback + @supports)', () => {
   it('outline buttons keep --zest-accent (not accent-text)', () => {
     const css = generateStyles({ accentColor: '#0071e3', buttonStyle: 'outline' });
     expect(css).toContain('color: var(--zest-accent);\n  border: 2px solid');
+  });
+
+  it('embed buttons use the same contrast fallback and native override', () => {
+    const css = overlayStyles('#00e639');
+    expect(getAccentTextLine(css)).toBe('#1f2937');
+    expect(css).toContain('color: var(--zest-accent-text)');
+    expect(css).toContain('contrast-color(#00e639)');
+    expect(getAccentTextLine(overlayStyles('#0071e3'))).toBe('#ffffff');
   });
 });

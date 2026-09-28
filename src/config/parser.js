@@ -76,6 +76,16 @@ function parseDataAttributes() {
   const hardWall = script.getAttribute('data-hard-wall');
   if (hardWall !== null) config.hardWall = hardWall !== 'false';
 
+  // Privacy URL rewrite for gated embeds (youtube-nocookie.com, Vimeo dnt=1).
+  const privacyRewrite = script.getAttribute('data-privacy-rewrite');
+  if (privacyRewrite !== null) config.privacyRewrite = privacyRewrite !== 'false';
+
+  // Embed gating toggle (intercept.embeds). Default on.
+  const embeds = script.getAttribute('data-intercept-embeds');
+  if (embeds !== null) {
+    config.intercept = { ...(config.intercept || {}), embeds: embeds !== 'false' };
+  }
+
   // Auto init
   const autoInit = script.getAttribute('data-auto-init');
   if (autoInit !== null) config.autoInit = autoInit !== 'false';

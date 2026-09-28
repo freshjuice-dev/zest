@@ -34,6 +34,12 @@ export type ConsentState =
   & Partial<Record<ConsentCategory, boolean>>
   & { essential: true };
 
+/** Result of a consent write (acceptAll / rejectAll / updateConsent). */
+export interface ConsentUpdateResult {
+  current: ConsentState;
+  previous: ConsentState;
+}
+
 /** Snapshot returned by `init()`. */
 export interface InitSnapshot {
   consent: ConsentState;
@@ -140,6 +146,13 @@ export interface InterceptToggles {
    * the runtime beacon is third-party.
    */
   network?: boolean;
+  /**
+   * Third-party `<iframe>` embed gating (YouTube, Vimeo, social widgets).
+   * Blocked embeds have their `src` swapped to `about:blank` until the
+   * category is allowed; the headless build renders no overlay — listen
+   * for the `zest:embed` event and render your own. Default `true`.
+   */
+  embeds?: boolean;
 }
 
 /** Configuration accepted by `init()`. */
@@ -150,6 +163,11 @@ export interface InitOptions {
   dntBehavior?: DNTBehavior;
   /** Cookie expiration in days. Default `365`. */
   expiration?: number;
+  /**
+   * Rewrite activated embed URLs to their privacy variant (YouTube →
+   * youtube-nocookie.com, Vimeo → dnt=1). Default `true`.
+   */
+  privacyRewrite?: boolean;
   /** Disable individual interceptors. Default: all on. */
   intercept?: InterceptToggles;
   /**
@@ -190,6 +208,7 @@ export interface ZestEvents {
   SHOW: 'zest:show';
   HIDE: 'zest:hide';
   GEO: 'zest:geo';
+  EMBED: 'zest:embed';
 }
 
 export type ZestEventName = ZestEvents[keyof ZestEvents];
@@ -200,7 +219,17 @@ export interface ZestEventDetail {
   previous?: ConsentState;
 }
 
+export interface ZestEmbedEventDetail {
+  phase: 'blocked' | 'activated';
+  element: HTMLIFrameElement;
+  category: ConsentCategory;
+  url: string;
+}
+
 declare const Zest: {
+  /** Version of the running script (from package.json, injected at build). */
+  version: string;
+
   /** Initialise the consent engine. Must be called before any other API. */
   init(options?: InitOptions): InitSnapshot;
 
@@ -218,15 +247,15 @@ declare const Zest: {
   getConsentProof(): ConsentProof | null;
 
   /** Grant consent for every category. */
-  acceptAll(): ConsentState | null;
+  acceptAll(): ConsentUpdateResult | null;
 
   /** Revoke consent for every non-essential category. */
-  rejectAll(): ConsentState | null;
+  rejectAll(): ConsentUpdateResult | null;
 
   /** Set per-category consent. Missing keys are left untouched. */
   updateConsent(
     selections: Partial<Record<ConsentCategory, boolean>>
-  ): ConsentState | null;
+  ): ConsentUpdateResult | null;
 
   /** Wipe all consent state. Useful for "I changed my mind" flows. */
   reset(): void;
@@ -244,17 +273,20 @@ declare const Zest: {
   /** Why `isDoNotTrackEnabled()` returned what it did. */
   getDNTDetails(): DNTDetails;
 
+  /**
+   * Activate a single gated embed (one-time load — no consent is recorded).
+   * Pass the `<iframe>` element or its index in the embed queue. Returns
+   * `true` when an embed was activated.
+   */
+  activateEmbed(elementOrIndex: HTMLIFrameElement | number): boolean;
+
   /** Subscribe to a consent event. Returns an unsubscribe function. */
-  on(
-    eventName: ZestEventName,
-    handler: (event: CustomEvent<ZestEventDetail>) => void
-  ): () => void;
+  on(eventName: 'zest:embed', handler: (event: CustomEvent<ZestEmbedEventDetail>) => void): () => void;
+  on(eventName: Exclude<ZestEventName, 'zest:embed'>, handler: (event: CustomEvent<ZestEventDetail>) => void): () => void;
 
   /** Subscribe once; auto-unsubscribes after the first call. */
-  once(
-    eventName: ZestEventName,
-    handler: (event: CustomEvent<ZestEventDetail>) => void
-  ): () => void;
+  once(eventName: 'zest:embed', handler: (event: CustomEvent<ZestEmbedEventDetail>) => void): () => void;
+  once(eventName: Exclude<ZestEventName, 'zest:embed'>, handler: (event: CustomEvent<ZestEventDetail>) => void): () => void;
 
   /** Constants for `on()` / `once()`. */
   EVENTS: ZestEvents;
@@ -278,6 +310,7 @@ export const hasConsentDecision: typeof Zest.hasConsentDecision;
 export const getConsentProof: typeof Zest.getConsentProof;
 export const isDoNotTrackEnabled: typeof Zest.isDoNotTrackEnabled;
 export const getDNTDetails: typeof Zest.getDNTDetails;
+export const activateEmbed: typeof Zest.activateEmbed;
 export const on: typeof Zest.on;
 export const once: typeof Zest.once;
 export const EVENTS: ZestEvents;
