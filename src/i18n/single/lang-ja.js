@@ -22,6 +22,11 @@ export const translations = {
           },
           "widget": {
               "label": "Cookie設定"
+          },
+          "embed": {
+              "title": "外部コンテンツはブロックされています",
+              "text": "%category%カテゴリのコンテンツは、同意するまで読み込まれません。",
+              "load": "コンテンツを読み込む"
           }
       },
       "categories": {

@@ -22,6 +22,11 @@ export const translations = {
           },
           "widget": {
               "label": "Налаштування cookie"
+          },
+          "embed": {
+              "title": "Зовнішній вміст заблоковано",
+              "text": "Вміст категорії «%category%» не завантажується, доки ви не дасте згоду.",
+              "load": "Завантажити вміст"
           }
       },
       "categories": {

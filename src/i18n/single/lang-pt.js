@@ -22,6 +22,11 @@ export const translations = {
           },
           "widget": {
               "label": "Configurações de cookies"
+          },
+          "embed": {
+              "title": "Conteúdo externo bloqueado",
+              "text": "O conteúdo da categoria %category% não é carregado até você dar o consentimento.",
+              "load": "Carregar conteúdo"
           }
       },
       "categories": {

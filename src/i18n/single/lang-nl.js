@@ -22,6 +22,11 @@ export const translations = {
           },
           "widget": {
               "label": "Cookie-instellingen"
+          },
+          "embed": {
+              "title": "Externe inhoud geblokkeerd",
+              "text": "Inhoud uit de categorie %category% wordt pas geladen als je toestemming geeft.",
+              "load": "Inhoud laden"
           }
       },
       "categories": {

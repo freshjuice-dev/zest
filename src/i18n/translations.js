@@ -23,6 +23,11 @@ export const translations = {
       },
       widget: {
         label: 'Cookie Settings'
+      },
+      embed: {
+        title: 'External content is blocked',
+        text: 'Content in the %category% category does not load until you consent.',
+        load: 'Load content'
       }
     },
     categories: {
@@ -64,6 +69,11 @@ export const translations = {
       },
       widget: {
         label: 'Cookie-Einstellungen'
+      },
+      embed: {
+        title: 'Externer Inhalt ist blockiert',
+        text: 'Inhalte der Kategorie %category% werden erst geladen, wenn Sie zustimmen.',
+        load: 'Inhalt laden'
       }
     },
     categories: {
@@ -105,6 +115,11 @@ export const translations = {
       },
       widget: {
         label: 'Configuración de cookies'
+      },
+      embed: {
+        title: 'Contenido externo bloqueado',
+        text: 'El contenido de la categoría %category% no se carga hasta que des tu consentimiento.',
+        load: 'Cargar contenido'
       }
     },
     categories: {
@@ -146,6 +161,11 @@ export const translations = {
       },
       widget: {
         label: 'Paramètres des cookies'
+      },
+      embed: {
+        title: 'Contenu externe bloqué',
+        text: 'Le contenu de la catégorie %category% ne se charge pas tant que vous n’avez pas consenti.',
+        load: 'Charger le contenu'
       }
     },
     categories: {
@@ -187,6 +207,11 @@ export const translations = {
       },
       widget: {
         label: 'Impostazioni cookie'
+      },
+      embed: {
+        title: 'Contenuto esterno bloccato',
+        text: 'Il contenuto della categoria %category% non viene caricato finché non dai il consenso.',
+        load: 'Carica contenuto'
       }
     },
     categories: {
@@ -228,6 +253,11 @@ export const translations = {
       },
       widget: {
         label: 'Configurações de cookies'
+      },
+      embed: {
+        title: 'Conteúdo externo bloqueado',
+        text: 'O conteúdo da categoria %category% não é carregado até você dar o consentimento.',
+        load: 'Carregar conteúdo'
       }
     },
     categories: {
@@ -269,6 +299,11 @@ export const translations = {
       },
       widget: {
         label: 'Cookie-instellingen'
+      },
+      embed: {
+        title: 'Externe inhoud geblokkeerd',
+        text: 'Inhoud uit de categorie %category% wordt pas geladen als je toestemming geeft.',
+        load: 'Inhoud laden'
       }
     },
     categories: {
@@ -310,6 +345,11 @@ export const translations = {
       },
       widget: {
         label: 'Ustawienia plików cookie'
+      },
+      embed: {
+        title: 'Treść zewnętrzna zablokowana',
+        text: 'Treść z kategorii %category% nie wczytuje się, dopóki nie wyrazisz zgody.',
+        load: 'Wczytaj treść'
       }
     },
     categories: {
@@ -351,6 +391,11 @@ export const translations = {
       },
       widget: {
         label: 'Налаштування cookie'
+      },
+      embed: {
+        title: 'Зовнішній вміст заблоковано',
+        text: 'Вміст категорії «%category%» не завантажується, доки ви не дасте згоду.',
+        load: 'Завантажити вміст'
       }
     },
     categories: {
@@ -392,6 +437,11 @@ export const translations = {
       },
       widget: {
         label: 'Настройки cookie'
+      },
+      embed: {
+        title: 'Внешний контент заблокирован',
+        text: 'Содержимое категории «%category%» не загружается, пока вы не дадите согласие.',
+        load: 'Загрузить содержимое'
       }
     },
     categories: {
@@ -433,6 +483,11 @@ export const translations = {
       },
       widget: {
         label: 'Cookie設定'
+      },
+      embed: {
+        title: '外部コンテンツはブロックされています',
+        text: '%category%カテゴリのコンテンツは、同意するまで読み込まれません。',
+        load: 'コンテンツを読み込む'
       }
     },
     categories: {
@@ -474,6 +529,11 @@ export const translations = {
       },
       widget: {
         label: 'Cookie设置'
+      },
+      embed: {
+        title: '外部内容已被屏蔽',
+        text: '除非您同意，否则%category%类别的内容不会加载。',
+        load: '加载内容'
       }
     },
     categories: {

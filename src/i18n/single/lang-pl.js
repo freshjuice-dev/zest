@@ -22,6 +22,11 @@ export const translations = {
           },
           "widget": {
               "label": "Ustawienia plików cookie"
+          },
+          "embed": {
+              "title": "Treść zewnętrzna zablokowana",
+              "text": "Treść z kategorii %category% nie wczytuje się, dopóki nie wyrazisz zgody.",
+              "load": "Wczytaj treść"
           }
       },
       "categories": {

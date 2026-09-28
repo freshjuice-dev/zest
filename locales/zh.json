@@ -18,6 +18,11 @@
     },
     "widget": {
       "label": "Cookie设置"
+    },
+    "embed": {
+      "title": "外部内容已被屏蔽",
+      "text": "除非您同意，否则%category%类别的内容不会加载。",
+      "load": "加载内容"
     }
   },
   "categories": {
