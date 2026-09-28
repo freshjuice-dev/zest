@@ -14,7 +14,9 @@ export const SAFE_TRACKERS = {
     'www.googletagmanager.com',
     'plausible.io',
     'cloudflareinsights.com',
-    'static.cloudflareinsights.com'
+    'static.cloudflareinsights.com',
+    'clarity.ms',
+    'www.clarity.ms'
   ],
   marketing: [
     'connect.facebook.net',
@@ -37,8 +39,6 @@ export const STRICT_TRACKERS = {
     'hotjar.com',
     'static.hotjar.com',
     'script.hotjar.com',
-    'clarity.ms',
-    'www.clarity.ms',
     'heapanalytics.com',
     'cdn.heapanalytics.com',
     'mixpanel.com',
