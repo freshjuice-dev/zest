@@ -7,7 +7,7 @@
 
 A lightweight cookie consent toolkit for GDPR/CCPA compliance.
 
-- **Lightweight** — ~16KB gzipped (single language) / ~22KB (all 12 languages) / ~14KB (headless)
+- **Lightweight** — ~18KB gzipped (single language) / ~24KB (all 12 languages) / ~16KB (headless)
 - **Zero dependencies** — Vanilla JavaScript
 - **Shadow DOM** — Styles isolated from your site
 - **Headless mode** — Bring your own UI & CSS, use only the consent engine
@@ -51,8 +51,8 @@ Zest.init({ mode: 'safe', policyUrl: '/privacy' });
 
 | Entry | What you get | Min / Gzip |
 |---|---|---|
-| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~73 KB / **~22 KB** |
-| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~42 KB / **~14 KB** |
+| `@freshjuice/zest` | Consent engine **+ Shadow DOM UI** (banner, modal, widget) | ~81 KB / **~24 KB** |
+| `@freshjuice/zest/headless` | Consent engine only, **no UI / no CSS** — you build the UI | ~47 KB / **~16 KB** |
 
 Use **headless** when you want full control over markup and styling.
 
@@ -125,6 +125,11 @@ window.ZestConfig = {
   // Ensures provable awareness. Aggressive UX — default: false.
   hardWall: false,
 
+  // Rewrite gated embed URLs to their privacy variant when they activate:
+  // youtube.com/embed/* -> youtube-nocookie.com (official privacy-enhanced
+  // mode), Vimeo players get dnt=1. Default: true.
+  privacyRewrite: true,
+
   // Consent expiration in days
   expiration: 365,
 
@@ -187,9 +192,17 @@ window.ZestConfig = {
 > `data-mode` sets the blocking mode: `safe` (default), `strict`,
 > `manual`, or `doomsday`. Unknown values fall back to `safe`.
 
+> `data-privacy-rewrite="false"` disables the privacy URL rewrite for
+> gated embeds (youtube-nocookie.com host swap, Vimeo `dnt=1`).
+
+> `data-intercept-embeds="false"` disables third-party iframe gating
+> entirely (the default is on).
+
 ## API
 
 ```javascript
+Zest.version           // Running package version
+
 // Show/hide UI (full build only)
 Zest.show()            // Show banner
 Zest.hide()            // Hide banner
@@ -203,10 +216,11 @@ Zest.hasConsent('analytics')   // boolean
 Zest.hasConsentDecision()      // boolean — has the user made a choice yet?
 Zest.getConsentProof()         // full consent cookie payload (compliance audit)
 
-// Programmatic actions
+// Programmatic actions — return { current, previous }, or null before init
 Zest.acceptAll()
 Zest.rejectAll()
 Zest.updateConsent({ analytics: true, marketing: false })
+Zest.activateEmbed(iframeOrIndex) // One-time load without recording consent
 
 // DNT / GPC
 Zest.isDoNotTrackEnabled()
@@ -218,7 +232,7 @@ Zest.resolveGeo()              // await { action, verdict } (when `geo` is confi
 // Events — subscribe helpers (also work with addEventListener)
 Zest.on('zest:change', (e) => {})
 Zest.once('zest:ready', (e) => {})
-Zest.EVENTS                    // { READY, CONSENT, REJECT, CHANGE, SHOW, HIDE, GEO }
+Zest.EVENTS                    // { READY, CONSENT, REJECT, CHANGE, SHOW, HIDE, GEO, EMBED }
 ```
 
 ## Headless mode — bring your own UI
@@ -451,6 +465,57 @@ window.ZestConfig = {
 <script data-zest-allow src="https://cdn.example.com/library.js"></script>
 ```
 
+## Embed gating (third-party iframes)
+
+Third-party embeds (YouTube, Vimeo, social widgets) load trackers and set
+cookies the moment their iframe starts fetching. Zest gates them the same
+way it gates scripts — with one extra guarantee: on activation, embed URLs
+are rewritten to their privacy variant (`youtube.com/embed/*` is served
+from `youtube-nocookie.com`, Vimeo players get `dnt=1`). Disable with
+`privacyRewrite: false` / `data-privacy-rewrite="false"`.
+
+**Existing embeds work with zero changes.** Zest scans the page, and any
+iframe matching the blocking mode's embed providers (YouTube, Vimeo,
+Facebook plugins, X/Twitter, Spotify, SoundCloud, Twitch, Dailymotion, VK,
+Rutube, Dzen — or your `blockedDomains` entries) is swapped to `about:blank`
+and covered by a consent overlay until its category is allowed. The
+overlay's "Load content" button activates that single embed as a one-time
+exception — no consent is recorded.
+
+**For a zero-request guarantee** (recommended for static HTML and CMS
+templates), author embeds without a `src`:
+
+```html
+<iframe
+  data-consent-src="https://www.youtube.com/embed/VIDEO_ID"
+  data-consent-category="marketing"
+  width="560"
+  height="315"
+  title="YouTube video"
+  allowfullscreen
+></iframe>
+```
+
+The URL never touches the DOM until consent is granted (or the overlay
+button is clicked). `data-consent-category` accepts the same blockable
+categories as script tagging; an embed written with `data-consent-src`
+but no resolvable category defaults to `marketing` (fail closed).
+
+`data-zest-allow` opts an iframe out of gating, same as for scripts.
+Embeds follow every consent write: granting a category activates its
+embeds, revoking it re-blocks them. Programmatic control:
+
+```javascript
+Zest.activateEmbed(iframeElement); // one-time load, records no consent
+```
+
+A `zest:embed` event fires on every gate/activate — `e.detail.phase` is
+`'blocked'` or `'activated'`, with `element`, `category`, and `url`.
+
+Disable the whole layer with `intercept: { embeds: false }` or
+`data-intercept-embeds="false"`. Headless builds get the same gating
+engine (no overlay — render your own via the `zest:embed` event).
+
 ## Events
 
 ```javascript
@@ -473,6 +538,11 @@ document.addEventListener('zest:ready', (e) => {
 // Fires only when `geo` is configured — see "Geolocation / jurisdiction gating"
 document.addEventListener('zest:geo', (e) => {
   console.log('jurisdiction resolved:', e.detail.action, e.detail.verdict);
+});
+
+// Fires when a gated iframe embed is blocked or activated
+document.addEventListener('zest:embed', (e) => {
+  console.log('embed', e.detail.phase, e.detail.category, e.detail.url);
 });
 
 // Or via the helpers
@@ -527,9 +597,9 @@ Built-in translations with auto-detection.
 
 | Bundle | Size (gzip) | Description |
 |--------|-------------|-------------|
-| `zest.min.js` | ~22 KB | All 12 languages, auto-detects |
-| `zest.{lang}.min.js` | ~16 KB | Single language (e.g. `zest.de.min.js`) |
-| `zest.headless.esm.min.js` | ~14 KB | Logic only, no UI / no translations (ESM import) |
+| `zest.min.js` | ~24 KB | All 12 languages, auto-detects |
+| `zest.{lang}.min.js` | ~18 KB | Single language (e.g. `zest.de.min.js`) |
+| `zest.headless.esm.min.js` | ~16 KB | Logic only, no UI / no translations (ESM import) |
 
 ```html
 <!-- Full bundle - auto-detects language -->
