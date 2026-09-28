@@ -5,6 +5,66 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-09-28
+
+### Breaking
+
+- **Third-party iframe gating is enabled by default.** Existing 2.x installs keep
+  their current behavior, while 3.x blocks known cookie-leaking embeds until
+  consent. Sites that manage iframe gating themselves can opt out with
+  `intercept: { embeds: false }` or `data-intercept-embeds="false"`.
+- **Microsoft Clarity is now blocked in safe mode** (previously strict only).
+  Clarity is a session-replay tracker and now follows GA4, GTM, Plausible and
+  Cloudflare Insights under analytics. Sites that intentionally load Clarity
+  before consent must explicitly allow its domain or disable the relevant
+  interceptor.
+
+### Added
+
+- **Embed gating for third-party iframes.** Zest now gates YouTube, Vimeo,
+  Facebook, X/Twitter, Spotify, SoundCloud, Twitch, Dailymotion, VK, Rutube
+  and Dzen embeds the same way it gates scripts. Existing `<iframe src>`
+  markup works with zero changes (scanned, swapped to `about:blank`, and
+  covered by a Shadow-DOM consent overlay with a one-time "Load content"
+  button), and embeds authored with `data-consent-src` +
+  `data-consent-category` never fetch at all — the URL never touches the
+  DOM until consent is granted. Embeds follow every consent write:
+  granting a category activates its embeds, revoking it re-blocks them.
+  Disable the layer with `intercept: { embeds: false }` or
+  `data-intercept-embeds="false"`.
+- **Privacy URL rewrite on activation.** When a gated embed is released,
+  its URL is rewritten to the vendor's privacy variant:
+  `youtube.com/embed/*` → `youtube-nocookie.com` (the official
+  privacy-enhanced mode; YouTube has no `dnt` parameter), Vimeo players
+  get `dnt=1`. Default on; disable with `privacyRewrite: false` or
+  `data-privacy-rewrite="false"`.
+- **`Zest.activateEmbed(iframeOrIndex)`** — activate one gated embed as a
+  one-time exception without recording consent. Available on both the full
+  and headless builds.
+- **`zest:embed` event** — fires with `{ phase: 'blocked' | 'activated',
+  element, category, url }` on every embed gate/activation, so headless
+  consumers can render their own overlay UI.
+- **`Zest.version`** — reports the running script's version (injected from
+  package.json at build time, same value on both builds). Useful for
+  debugging unpinned CDN installs.
+
+### Changed
+
+- **Full-build `acceptAll()` / `rejectAll()` / `updateConsent()` now return
+  the consent result** (`{ current, previous }`, `null` before
+  initialization) — previously `undefined`, now at parity with the headless
+  build. Additive: callers that ignored the return value are unaffected.
+- Dev dependencies updated: ESLint 10.11.0, Rollup 4.63.4, TypeScript 7.0.2,
+  Vite 8.3.0 and Vitest 5.0.1. Builds and `test:run` now validate both public
+  declaration files with strict TypeScript checking.
+
+### Fixed
+
+- **Type definitions** — `zest.d.ts` was missing `updateConsent()` and
+  `resolveGeo()` and documented `showWidget()` / `hideWidget()`, which
+  never existed at runtime. Type surfaces are now pinned against the
+  runtime API by a contract test, so this class of drift fails CI.
+
 ## [2.8.0] - 2026-09-08
 
 ### Fixed
